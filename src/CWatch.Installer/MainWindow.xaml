@@ -1,0 +1,159 @@
+<Window x:Class="CWatch.Installer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="C:Watch Setup" Height="480" Width="680"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Icon="Assets/app_icon.png"
+        Background="{StaticResource BgCanvas}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="65"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top Header Banner -->
+        <Border Grid.Row="0" Background="{StaticResource BgSidebar}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="0,0,0,1" Padding="24,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="C:Watch Setup Wizard" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
+                    <TextBlock x:Name="TxtHeaderSubtitle" Text="Install C:Watch Storage Intelligence v1.0.0" FontSize="11.5" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                </StackPanel>
+                <Border Grid.Column="1" CornerRadius="6" Width="44" Height="44" Background="{StaticResource BgCard}" ClipToBounds="True">
+                    <Image Source="Assets/app_icon.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Center Step Pages Host -->
+        <Grid Grid.Row="1" Margin="32,20">
+            <!-- Step 1: Welcome & Destination Folder -->
+            <StackPanel x:Name="Step1Welcome" Visibility="Visible">
+                <TextBlock Text="Choose Install Location" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,6"/>
+                <TextBlock Text="Setup will install C:Watch Storage Intelligence into the following directory. To install to a different folder, click Browse and select another folder." FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,18"/>
+
+                <!-- Path Picker Card -->
+                <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1" CornerRadius="6" Padding="16" Margin="0,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="DESTINATION DIRECTORY" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,8"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TxtInstallPath" TextChanged="TxtInstallPath_TextChanged" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <Button Grid.Column="1" Content="BROWSE..." Click="BtnBrowse_Click" Style="{StaticResource SecondaryButton}" Padding="14,6" FontSize="11"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Disk Space Info -->
+                <Border Background="{StaticResource BgCardSecondary}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1" CornerRadius="4" Padding="12,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" Grid.Column="0">
+                            <TextBlock Text="Space required: " FontSize="11" Foreground="{StaticResource TextMuted}"/>
+                            <TextBlock Text="~70 MB" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
+                            <TextBlock Text="Space available: " FontSize="11" Foreground="{StaticResource TextMuted}"/>
+                            <TextBlock x:Name="TxtSpaceAvailable" Text="Computing..." FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </StackPanel>
+
+            <!-- Step 2: Shortcuts & Options -->
+            <StackPanel x:Name="Step2Options" Visibility="Collapsed">
+                <TextBlock Text="Select Additional Tasks" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,6"/>
+                <TextBlock Text="Select the additional options you would like Setup to perform while installing C:Watch." FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,18"/>
+
+                <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1" CornerRadius="6" Padding="18">
+                    <StackPanel>
+                        <TextBlock Text="SHORTCUTS &amp; STARTUP" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,14"/>
+
+                        <CheckBox x:Name="ChkDesktopShortcut" IsChecked="True" Margin="0,0,0,14">
+                            <StackPanel Margin="6,0,0,0">
+                                <TextBlock Text="Create a Desktop shortcut" FontWeight="Bold" FontSize="12.5"/>
+                                <TextBlock Text="Adds a convenient launch icon to your Windows desktop" FontSize="11" Foreground="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                        </CheckBox>
+
+                        <CheckBox x:Name="ChkStartMenuShortcut" IsChecked="True" Margin="0,0,0,14">
+                            <StackPanel Margin="6,0,0,0">
+                                <TextBlock Text="Create a Start Menu program shortcut" FontWeight="Bold" FontSize="12.5"/>
+                                <TextBlock Text="Adds C:Watch to the Windows Start Menu programs list" FontSize="11" Foreground="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                        </CheckBox>
+
+                        <CheckBox x:Name="ChkAutoStartup" IsChecked="False">
+                            <StackPanel Margin="6,0,0,0">
+                                <TextBlock Text="Launch C:Watch minimized on Windows startup" FontWeight="Bold" FontSize="12.5"/>
+                                <TextBlock Text="Enables automatic continuous background storage monitoring" FontSize="11" Foreground="{StaticResource TextMuted}"/>
+                            </StackPanel>
+                        </CheckBox>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- Step 3: Installing -->
+            <StackPanel x:Name="Step3Installing" Visibility="Collapsed" VerticalAlignment="Center">
+                <TextBlock Text="Installing C:Watch..." FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,6"/>
+                <TextBlock Text="Please wait while Setup installs C:Watch on your computer." FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,20"/>
+
+                <!-- Progress Bar -->
+                <ProgressBar x:Name="InstallProgressBar" Height="8" Background="{StaticResource BgInput}" Foreground="{StaticResource AccentOrange}" BorderThickness="0" Margin="0,0,0,12"/>
+                
+                <!-- Status Log Text -->
+                <TextBlock x:Name="TxtInstallStatus" Text="Extracting files..." FontSize="11.5" Foreground="{StaticResource TextMuted}" FontFamily="Consolas, Segoe UI"/>
+            </StackPanel>
+
+            <!-- Step 4: Finished -->
+            <StackPanel x:Name="Step4Finished" Visibility="Collapsed" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,14">
+                    <Border Width="40" Height="40" CornerRadius="20" Background="{StaticResource AccentGreen}" Margin="0,0,12,0">
+                        <TextBlock Text="✓" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="C:Watch Installation Complete!" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                        <TextBlock Text="C:Watch has been successfully installed on your computer." FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1" CornerRadius="6" Padding="16" Margin="40,10,40,20">
+                    <CheckBox x:Name="ChkLaunchApp" IsChecked="True" HorizontalAlignment="Center">
+                        <TextBlock Text="Launch C:Watch Storage Intelligence now" FontWeight="Bold" FontSize="12.5" Margin="6,0,0,0"/>
+                    </CheckBox>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <!-- Bottom Actions Bar -->
+        <Border Grid.Row="2" Background="{StaticResource BgSidebar}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="0,1,0,0" Padding="24,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="BtnCancel" Content="CANCEL" Click="BtnCancel_Click" Style="{StaticResource SecondaryButton}" Padding="14,6" FontSize="11"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button x:Name="BtnBack" Content="BACK" Click="BtnBack_Click" Style="{StaticResource SecondaryButton}" Visibility="Collapsed" Margin="0,0,8,0" Padding="14,6" FontSize="11"/>
+                    <Button x:Name="BtnNext" Content="NEXT →" Click="BtnNext_Click" Style="{StaticResource PrimaryButton}" Padding="16,6" FontSize="11"/>
+                    <Button x:Name="BtnFinish" Content="FINISH" Click="BtnFinish_Click" Style="{StaticResource PrimaryButton}" Background="{StaticResource AccentGreen}" Visibility="Collapsed" Padding="18,6" FontSize="11"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
