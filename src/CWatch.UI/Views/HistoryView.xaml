@@ -6,30 +6,30 @@
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="980">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="32,24,32,36">
+        <StackPanel Margin="28,20,28,32">
             <!-- Header Row with Time Range Selectors -->
-            <Grid Margin="0,0,0,20">
+            <Grid Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="Storage History &amp; Differential Growth" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Variable Display, Aptos Display, Segoe UI, sans-serif"/>
-                    <TextBlock Text="Understand how your drive changes over time and identify what components grew" FontSize="12.5" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
+                    <TextBlock Text="Storage History &amp; Differential Growth" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
+                    <TextBlock Text="Understand how your drive changes over time and identify what components grew" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
                 </StackPanel>
 
                 <!-- Time Range Filter Buttons -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="24 HOURS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="24h" Style="{StaticResource ChipButton}" Margin="0,0,5,0"/>
-                    <Button Content="7 DAYS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="7d" Style="{StaticResource ChipButton}" Margin="0,0,5,0"/>
-                    <Button Content="30 DAYS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="30d" Style="{StaticResource ChipButton}" Margin="0,0,5,0"/>
-                    <Button Content="ALL TIME" Command="{Binding SelectTimeRangeCommand}" CommandParameter="90d" Style="{StaticResource ChipButton}"/>
+                    <Button Content="24 HOURS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="24h" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10" Margin="0,0,5,0"/>
+                    <Button Content="7 DAYS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="7d" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10" Margin="0,0,5,0"/>
+                    <Button Content="30 DAYS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="30d" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10" Margin="0,0,5,0"/>
+                    <Button Content="ALL TIME" Command="{Binding SelectTimeRangeCommand}" CommandParameter="90d" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10"/>
                 </StackPanel>
             </Grid>
 
             <!-- Burn Rate & Projected Status Card -->
-            <Border Style="{StaticResource HeroCardBorder}" Margin="0,0,0,20">
+            <Border Style="{DynamicResource HeroCardBorder}" Margin="0,0,0,16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -38,25 +38,26 @@
 
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="📈 STORAGE BURN RATE: " FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextMuted}"/>
-                            <TextBlock Text="{Binding BurnRateSummary}" FontSize="13.5" FontWeight="Bold" Foreground="{StaticResource AccentOrange}"/>
+                            <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource AccentOrange}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="STORAGE BURN RATE: " FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Text="{Binding BurnRateSummary}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}"/>
                         </StackPanel>
-                        <TextBlock Text="{Binding GrowthSummary}" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,5,0,0"/>
+                        <TextBlock Text="{Binding GrowthSummary}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- What Grew Recently? Section -->
-            <TextBlock Text="DIFFERENTIAL GROWTH DELTAS (WHAT ACCUMULATED?)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,10"/>
+            <TextBlock Text="DIFFERENTIAL GROWTH DELTAS (WHAT ACCUMULATED?)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
 
-            <Border Style="{StaticResource CardBorder}" Padding="0" Margin="0,0,0,24">
+            <Border Style="{DynamicResource CardBorder}" Padding="0" Margin="0,0,0,20">
                 <ListView ItemsSource="{Binding GrowthDeltas}" Background="Transparent" BorderThickness="0">
                     <ListView.View>
                         <GridView>
                             <GridViewColumn Header="LOCATION / COMPONENT" Width="380">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding DisplayPath}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" FontSize="12.5"/>
+                                        <TextBlock Text="{Binding DisplayPath}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" FontSize="12"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -64,8 +65,8 @@
                             <GridViewColumn Header="NET GROWTH DELTA" Width="170">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border Background="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}, ConverterParameter='bg'}" CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}}" FontWeight="Bold" FontSize="11.5" Foreground="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}, ConverterParameter='fg'}"/>
+                                        <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}}" FontWeight="Bold" FontSize="11" Foreground="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}, ConverterParameter='fg'}"/>
                                         </Border>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
@@ -74,7 +75,7 @@
                             <GridViewColumn Header="CURRENT SIZE" Width="140">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding FormattedCurrentSize}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" FontSize="12"/>
+                                        <TextBlock Text="{Binding FormattedCurrentSize}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -82,7 +83,7 @@
                             <GridViewColumn Header="PREVIOUS SIZE" Width="140">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding FormattedPreviousSize}" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" FontSize="11"/>
+                                        <TextBlock Text="{Binding FormattedPreviousSize}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" FontSize="10.5"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
@@ -92,48 +93,40 @@
             </Border>
 
             <!-- Snapshots History Table Section -->
-            <TextBlock Text="RECORDED VOLUME SNAPSHOTS (SQLITE ARCHIVE)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,10"/>
+            <TextBlock Text="RECORDED VOLUME SNAPSHOTS (SQLITE ARCHIVE)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
 
-            <Border Style="{StaticResource CardBorder}" Padding="0">
+            <Border Style="{DynamicResource CardBorder}" Padding="0">
                 <ListView ItemsSource="{Binding Snapshots}" Background="Transparent" BorderThickness="0">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="TIMESTAMP (UTC)" Width="180">
+                            <GridViewColumn Header="RECORDED UTC TIMESTAMP" Width="220">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding TimestampUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" FontSize="11" FontFamily="Consolas, Segoe UI"/>
+                                        <TextBlock Text="{Binding TimestampUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Header="FREE SPACE" Width="130">
+                            <GridViewColumn Header="USED SPACE" Width="140">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding FormattedFree}" FontWeight="Bold" Foreground="{StaticResource AccentGreen}" VerticalAlignment="Center" FontSize="11.5"/>
+                                        <TextBlock Text="{Binding UsedBytes, Converter={StaticResource SizeFormatter}}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Header="USED ALLOCATION" Width="140">
+                            <GridViewColumn Header="FREE HEADROOM" Width="140">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding FormattedUsed}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
+                                        <TextBlock Text="{Binding FreeBytes, Converter={StaticResource SizeFormatter}}" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center" FontSize="11.5"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>
 
-                            <GridViewColumn Header="TRIGGER REASON" Width="180">
+                            <GridViewColumn Header="UTILIZATION" Width="140">
                                 <GridViewColumn.CellTemplate>
                                     <DataTemplate>
-                                        <TextBlock Text="{Binding TriggerReason}" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" FontSize="11"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-
-                            <GridViewColumn Header="INDEXED ITEMS" Width="150">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding TotalFileCount, StringFormat='{}{0:N0} files'}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" FontSize="11"/>
+                                        <TextBlock Text="{Binding UsedPercentage, StringFormat='{}{0:F1}%'}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" FontSize="11"/>
                                     </DataTemplate>
                                 </GridViewColumn.CellTemplate>
                             </GridViewColumn>

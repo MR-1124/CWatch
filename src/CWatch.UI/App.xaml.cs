@@ -49,6 +49,9 @@ public partial class App : Application
             args.SetObserved();
         };
 
+        // Initialize Theme Engine
+        CWatch.UI.Services.ThemeManager.Instance.Initialize(CWatch.UI.Services.ThemeMode.Dark);
+
         // Initialize Services & Dependency Graph
         var settingsService = new SettingsService(_logger);
         var dbManager = new DatabaseManager(null, _logger);

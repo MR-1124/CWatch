@@ -6,27 +6,40 @@
         xmlns:views="clr-namespace:CWatch.UI.Views"
         xmlns:vm="clr-namespace:CWatch.UI.ViewModels"
         mc:Ignorable="d"
-        Title="C:Watch — Storage Intelligence &amp; Cleaner" Height="800" Width="1240"
+        Title="C:Watch — Storage Intelligence &amp; Cleaner" Height="820" Width="1280"
+        MinHeight="700" MinWidth="1050"
         WindowStartupLocation="CenterScreen"
         Icon="Assets/app_icon.png"
-        Background="{StaticResource BgCanvas}">
+        Background="{DynamicResource BgCanvas}">
 
     <Window.Resources>
-        <Style x:Key="NavButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+        <Style x:Key="SidebarNavBtn" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="0,0,0,3"/>
+            <Setter Property="Margin" Value="0,1"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondary}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource BgCardHover}"/>
-                    <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="3" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource BgCardSecondary}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource BgCardNested}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -37,127 +50,156 @@
         </Grid.ColumnDefinitions>
 
         <!-- Left Navigation Sidebar -->
-        <Border Grid.Column="0" Background="{StaticResource BgSidebar}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="0,0,1,0">
+        <Border Grid.Column="0" Background="{DynamicResource BgSidebar}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,0,1,0">
             <DockPanel LastChildFill="True">
                 <!-- App Brand Header -->
-                <StackPanel DockPanel.Dock="Top" Margin="18,20,18,16">
+                <StackPanel DockPanel.Dock="Top" Margin="18,18,18,14">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" CornerRadius="8" Width="36" Height="36" Margin="0,0,10,0" ClipToBounds="True" Background="{StaticResource BgCard}">
+                        <Border Grid.Column="0" CornerRadius="6" Width="34" Height="34" Margin="0,0,10,0" ClipToBounds="True" Background="{DynamicResource BgCard}">
                             <Image Source="Assets/app_icon.png" RenderOptions.BitmapScalingMode="HighQuality"/>
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="C:WATCH" FontSize="16" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
-                            <TextBlock Text="STORAGE INTELLIGENCE" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource AccentOrange}"/>
+                            <TextBlock Text="C:WATCH" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
+                            <TextBlock Text="STORAGE INTELLIGENCE" FontSize="8" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}"/>
                         </StackPanel>
                     </Grid>
 
-                    <!-- Drive Selector Pill -->
-                    <Border Background="{StaticResource BgCardSecondary}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1" CornerRadius="4" Padding="10,6" Margin="0,14,0,0">
+                    <!-- Drive Status Pill -->
+                    <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="10,6" Margin="0,14,0,0">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="💾 " FontSize="11" VerticalAlignment="Center"/>
-                                <TextBlock Text="Drive C: (Local Disk)" FontWeight="Bold" FontSize="11" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+                                <Rectangle Width="6" Height="6" RadiusX="3" RadiusY="3" Fill="{DynamicResource AccentGreen}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="C: Local Drive" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                             </StackPanel>
-                            <TextBlock Grid.Column="1" Text="NTFS" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="NTFS" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
                         </Grid>
                     </Border>
                 </StackPanel>
 
-                <!-- Offline Privacy Footer -->
-                <Border DockPanel.Dock="Bottom" Margin="16,10,16,16" Background="{StaticResource BgCardSecondary}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1" CornerRadius="4" Padding="10,8">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="🛡️" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="100% OFFLINE" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource AccentGreen}"/>
-                            <TextBlock Text="Zero Telemetry / Local Only" FontSize="9" Foreground="{StaticResource TextMuted}"/>
-                        </StackPanel>
-                    </Grid>
-                </Border>
+                <!-- Sidebar Footer: Theme Toggle & Offline Guarantee -->
+                <StackPanel DockPanel.Dock="Bottom" Margin="14,8,14,14">
+                    <!-- Quick Theme Mode Toggle Button -->
+                    <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="6,4" Margin="0,0,0,8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,0,0,0">
+                                <TextBlock Text="THEME" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Command="{Binding ToggleThemeCommand}" ToolTip="{Binding ThemeModeTooltip}" Style="{DynamicResource SecondaryButton}" Padding="10,3" FontSize="10" FontWeight="Bold">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding ThemeModeLabel}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}"/>
+                                    <TextBlock Text=" ⟳" FontSize="9.5" Foreground="{DynamicResource TextMuted}"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <!-- Offline Badge -->
+                    <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="10,6">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Rectangle Width="6" Height="6" RadiusX="3" RadiusY="3" Fill="{DynamicResource AccentGreen}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock Text="100% OFFLINE" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}"/>
+                                <TextBlock Text="Zero Telemetry / Local DB" FontSize="8" Foreground="{DynamicResource TextMuted}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
 
                 <!-- Navigation Links List -->
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="10,0">
                         <!-- Telemetry Group -->
-                        <TextBlock Text="TELEMETRY" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="10,6,0,4"/>
-                        <Button Style="{StaticResource NavButton}" Content="⊞  Dashboard" Command="{Binding NavigateCommand}" CommandParameter="Dashboard"/>
-                        <Button Style="{StaticResource NavButton}" Content="📁  Storage Explorer" Command="{Binding NavigateCommand}" CommandParameter="Explorer"/>
-                        <Button Style="{StaticResource NavButton}" Content="📄  Largest Files" Command="{Binding NavigateCommand}" CommandParameter="LargestFiles"/>
-                        <Button Style="{StaticResource NavButton}" Content="📑  Duplicate Files" Command="{Binding NavigateCommand}" CommandParameter="Duplicates"/>
+                        <TextBlock Text="TELEMETRY" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="10,4,0,3"/>
+                        <Button Style="{StaticResource SidebarNavBtn}" Content="⊞  Dashboard" Command="{Binding NavigateCommand}" CommandParameter="Dashboard"/>
+                        <Button Style="{StaticResource SidebarNavBtn}" Content="📁  Storage Explorer" Command="{Binding NavigateCommand}" CommandParameter="Explorer"/>
+                        <Button Style="{StaticResource SidebarNavBtn}" Content="📄  Largest Files" Command="{Binding NavigateCommand}" CommandParameter="LargestFiles"/>
+                        <Button Style="{StaticResource SidebarNavBtn}" Content="📑  Duplicate Files" Command="{Binding NavigateCommand}" CommandParameter="Duplicates"/>
 
                         <!-- Analytics & Trends Group -->
-                        <TextBlock Text="INTELLIGENCE &amp; TRENDS" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="10,16,0,4"/>
-                        <Button Style="{StaticResource NavButton}" Content="📈  Storage Timeline" Command="{Binding NavigateCommand}" CommandParameter="History"/>
-                        <Button Style="{StaticResource NavButton}" Content="🔄  Recurring Growth" Command="{Binding NavigateCommand}" CommandParameter="Recurring"/>
-                        <Button Style="{StaticResource NavButton}" Content="📋  Diagnostic Report" Command="{Binding NavigateCommand}" CommandParameter="Reports"/>
+                        <TextBlock Text="INTELLIGENCE &amp; TRENDS" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="10,14,0,3"/>
+                        <Button Style="{StaticResource SidebarNavBtn}" Content="📈  Storage Timeline" Command="{Binding NavigateCommand}" CommandParameter="History"/>
+                        <Button Style="{StaticResource SidebarNavBtn}" Content="🔄  Recurring Growth" Command="{Binding NavigateCommand}" CommandParameter="Recurring"/>
+                        <Button Style="{StaticResource SidebarNavBtn}" Content="📋  Diagnostic Reports" Command="{Binding NavigateCommand}" CommandParameter="Reports"/>
 
-                        <!-- Actions & Maintenance Group -->
-                        <TextBlock Text="MAINTENANCE" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="10,16,0,4"/>
-                        <Button Style="{StaticResource NavButton}" Content="🧹  Safe Cleanup" Command="{Binding NavigateCommand}" CommandParameter="Cleanup"/>
-                        <Button Style="{StaticResource NavButton}" Content="⚙  Preferences" Command="{Binding NavigateCommand}" CommandParameter="Settings" Margin="0,0,0,10"/>
+                        <!-- Maintenance & System Group -->
+                        <TextBlock Text="MAINTENANCE" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="10,14,0,3"/>
+                        <Button Style="{StaticResource SidebarNavBtn}" Content="🧹  Safe Cleanup" Command="{Binding NavigateCommand}" CommandParameter="Cleanup"/>
+                        <Button Style="{StaticResource SidebarNavBtn}" Content="⚙  Settings" Command="{Binding NavigateCommand}" CommandParameter="Settings"/>
+
+                        <!-- Active Quick Scan Button -->
+                        <Border Margin="0,18,0,0" Padding="0">
+                            <Button Style="{DynamicResource ModernButton}" Command="{Binding StartScanCommand}" IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolToVisibility}}" Padding="12,8" HorizontalAlignment="Stretch">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="⚡ " FontSize="11" Foreground="White"/>
+                                    <TextBlock Text="RUN FULL SCAN" FontWeight="Bold" FontSize="11"/>
+                                </StackPanel>
+                            </Button>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </DockPanel>
         </Border>
 
-        <!-- Main Content Area -->
+        <!-- Main Content View Area -->
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Top Header & Live Telemetry Bar -->
-            <Border Grid.Row="0" Background="{StaticResource BgSidebar}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="0,0,0,1" Padding="24,12">
+            <!-- Top Live Telemetry Bar -->
+            <Border Grid.Row="0" Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="0,0,0,1" Padding="24,10">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Drive Status Widget / Scanning Progress -->
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <!-- Normal Drive Status when not scanning -->
-                        <StackPanel Orientation="Horizontal" Visibility="{Binding IsScanning, Converter={StaticResource InverseBoolToVisibility}}">
-                            <Border Background="{StaticResource BgCardSecondary}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1" CornerRadius="4" Padding="10,4" Margin="0,0,12,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <Border Width="7" Height="7" CornerRadius="3.5" Background="{StaticResource AccentGreen}" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                    <TextBlock Text="C: VOLUME: " Foreground="{StaticResource TextMuted}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding DriveStatus.FreeBytes, Converter={StaticResource SizeFormatter}}" Foreground="{StaticResource AccentGreen}" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
-                                    <TextBlock Text=" FREE OF " Foreground="{StaticResource TextMuted}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding DriveStatus.TotalBytes, Converter={StaticResource SizeFormatter}}" Foreground="{StaticResource TextPrimary}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
-
-                        <!-- Live Scanning Indicator -->
-                        <StackPanel Orientation="Horizontal" Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}">
-                            <ProgressBar IsIndeterminate="True" Width="90" Height="4" Margin="0,0,10,0" BorderThickness="0" Background="{StaticResource BgCard}" Foreground="{StaticResource AccentOrange}"/>
-                            <TextBlock Text="{Binding ScanProgress.CurrentPhase}" FontSize="11" Foreground="{StaticResource AccentOrange}" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding ScanProgress.FilesScanned, StringFormat=' ({0:N0} files scanned)'}" FontSize="11" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center"/>
-                        </StackPanel>
+                    <!-- Drive Quick Gauge Indicator -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="DRIVE C: " FontWeight="Bold" FontSize="11.5" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding DriveStatus.FormattedUsed, StringFormat='{}{0} used'}" FontWeight="SemiBold" FontSize="11" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                        <TextBlock Text=" / " Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding DriveStatus.FormattedTotal, StringFormat='{}{0}'}" FontSize="11" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding DriveStatus.FormattedFree, StringFormat=' ({0} free)'}" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center"/>
                     </StackPanel>
 
-                    <!-- Scan Trigger / Cancel Buttons -->
-                    <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <Button Content="⚡ SCAN C: DRIVE" Command="{Binding StartScanCommand}" Style="{StaticResource ModernButton}" Visibility="{Binding IsScanning, Converter={StaticResource InverseBoolToVisibility}}" Padding="16,6" FontSize="11"/>
-                        <Button Content="✖ CANCEL SCAN" Command="{Binding CancelScanCommand}" Style="{StaticResource DangerButton}" Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}" Padding="14,6" FontSize="11"/>
+                    <!-- Live Scanning Progress Overlay -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}">
+                        <ProgressBar Width="140" Height="6" IsIndeterminate="True" Background="{DynamicResource BgInput}" Foreground="{DynamicResource AccentOrange}" BorderThickness="0" Margin="0,0,10,0"/>
+                        <TextBlock Text="{Binding ScanProgress.CurrentPhase}" FontSize="11" Foreground="{DynamicResource AccentOrange}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <Button Content="✕" Command="{Binding CancelScanCommand}" ToolTip="Cancel Scan" Style="{DynamicResource SecondaryButton}" Padding="6,2" Margin="8,0,0,0" FontSize="9"/>
                     </StackPanel>
+
+                    <!-- Health Indicator Badge -->
+                    <Border Grid.Column="2" CornerRadius="3" Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" Padding="10,4">
+                        <StackPanel Orientation="Horizontal">
+                            <Rectangle Width="6" Height="6" RadiusX="3" RadiusY="3" Fill="{Binding DriveStatus.HealthScore, Converter={StaticResource HealthScoreColorConverter}}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="HEALTH: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding DriveStatus.HealthScore, Converter={StaticResource HealthScoreTextConverter}}" FontWeight="Bold" FontSize="9.5" Foreground="{Binding DriveStatus.HealthScore, Converter={StaticResource HealthScoreColorConverter}}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
 
-            <!-- Dynamic Active View Container -->
+            <!-- Active View Container -->
             <ContentControl Grid.Row="1" Content="{Binding CurrentView}">
                 <ContentControl.Resources>
                     <DataTemplate DataType="{x:Type vm:DashboardViewModel}">

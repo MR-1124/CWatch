@@ -6,130 +6,144 @@
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="980">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="32,24,32,36">
+        <StackPanel Margin="28,20,28,32">
             <!-- Header Row -->
-            <Grid Margin="0,0,0,20">
+            <Grid Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="System Configuration &amp; Preferences" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Variable Display, Aptos Display, Segoe UI, sans-serif"/>
-                    <TextBlock Text="Configure background monitoring intervals, growth thresholds &amp; automated parameters" FontSize="12.5" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
+                    <TextBlock Text="System Configuration &amp; Preferences" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
+                    <TextBlock Text="Configure background monitoring intervals, growth thresholds &amp; theme appearance" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
                 </StackPanel>
 
                 <!-- Actions -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="RESTORE DEFAULTS" Command="{Binding ResetDefaultsCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Padding="12,7" FontSize="10.5"/>
-                    <Button Content="💾 SAVE CONFIGURATION" Command="{Binding SaveSettingsCommand}" Style="{StaticResource ModernButton}" Padding="14,7" FontSize="11"/>
+                    <Button Content="RESTORE DEFAULTS" Command="{Binding ResetDefaultsCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,8,0" Padding="10,6" FontSize="10.5"/>
+                    <Button Content="SAVE CONFIGURATION" Command="{Binding SaveSettingsCommand}" Style="{DynamicResource ModernButton}" Padding="14,6" FontSize="11"/>
                 </StackPanel>
             </Grid>
 
             <!-- Status banner -->
-            <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="{StaticResource AccentGreen}" FontWeight="Bold" Margin="0,0,0,14"/>
+            <TextBlock Text="{Binding StatusMessage}" FontSize="11.5" Foreground="{DynamicResource AccentGreen}" FontWeight="Bold" Margin="0,0,0,12"/>
 
             <!-- Privacy & Security Guarantee Banner -->
-            <Border Style="{StaticResource HeroCardBorder}" Padding="16" Margin="0,0,0,18" BorderBrush="{StaticResource AccentGreen}">
+            <Border Style="{DynamicResource HeroCardBorder}" Padding="14" Margin="0,0,0,16" BorderBrush="{DynamicResource AccentGreen}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="🛡️" FontSize="22" Margin="0,0,14,0" VerticalAlignment="Center"/>
+                    <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource AccentGreen}" Margin="0,0,10,0" VerticalAlignment="Center"/>
                     <StackPanel Grid.Column="1">
-                        <TextBlock Text="100% OFFLINE &amp; ZERO NETWORK TELEMETRY" FontWeight="Bold" FontSize="12" Foreground="{StaticResource AccentGreen}"/>
-                        <TextBlock Text="C:Watch executes strictly on your local device. No file paths, hashes, or capacity metrics are transmitted across the network." Foreground="{StaticResource TextSecondary}" FontSize="12" Margin="0,2,0,0"/>
+                        <TextBlock Text="100% OFFLINE &amp; ZERO NETWORK TELEMETRY" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AccentGreen}"/>
+                        <TextBlock Text="C:Watch executes strictly on your local device. No file paths, hashes, or capacity metrics are transmitted across the network." Foreground="{DynamicResource TextSecondary}" FontSize="11" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- Group 1: Background Monitoring -->
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,18">
+            <!-- Group 0: Appearance & Theme Engine -->
+            <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="BACKGROUND MONITORING &amp; DISK ALARMS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,16"/>
+                    <TextBlock Text="APPEARANCE &amp; THEME ENGINE" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,14"/>
+
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Application Theme Palette" FontWeight="Bold" FontSize="12.5"/>
+                            <TextBlock Text="Select your visual experience: Dark Cockpit, Light Chalk, or Automatic System Theme." Foreground="{DynamicResource TextMuted}" FontSize="11" Margin="0,2,0,0"/>
+                        </StackPanel>
+
+                        <!-- Theme Toggle Buttons -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <ComboBox SelectedValue="{Binding SelectedTheme, Mode=TwoWay}" SelectedValuePath="Tag" Width="140" Background="{DynamicResource BgInput}" Foreground="{DynamicResource TextPrimary}">
+                                <ComboBoxItem Content="🌙 Dark Cockpit" Tag="Dark"/>
+                                <ComboBoxItem Content="☀️ Light Chalk" Tag="Light"/>
+                                <ComboBoxItem Content="💻 System Auto" Tag="System"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Group 1: Background Monitoring -->
+            <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="BACKGROUND MONITORING &amp; DISK ALARMS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,14"/>
 
                     <!-- Enable Background Monitoring Toggle -->
-                    <CheckBox IsChecked="{Binding Settings.MonitoringEnabled}" Margin="0,0,0,16">
+                    <CheckBox IsChecked="{Binding Settings.MonitoringEnabled}" Margin="0,0,0,14">
                         <StackPanel Margin="8,0,0,0">
-                            <TextBlock Text="Enable Background Storage Monitor" FontWeight="Bold" FontSize="13"/>
-                            <TextBlock Text="Periodically records lightweight differential snapshots to detect silent growth and calculate burn rate." Foreground="{StaticResource TextMuted}" FontSize="11.5" Margin="0,2,0,0"/>
+                            <TextBlock Text="Enable Background Storage Monitor" FontWeight="Bold" FontSize="12.5"/>
+                            <TextBlock Text="Periodically records lightweight differential snapshots to detect silent growth and calculate burn rate." Foreground="{DynamicResource TextMuted}" FontSize="11" Margin="0,2,0,0"/>
                         </StackPanel>
                     </CheckBox>
 
                     <!-- Interval Setting -->
-                    <Grid Margin="0,0,0,14">
+                    <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="130"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Sampling Interval (Minutes)" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="How frequently C:Watch inspects drive capacity (Default: 30m)" Foreground="{StaticResource TextMuted}" FontSize="11.5"/>
+                            <TextBlock Text="Sampling Interval (Minutes)" FontWeight="SemiBold" FontSize="12"/>
+                            <TextBlock Text="How frequently C:Watch inspects drive capacity (Default: 30m)" Foreground="{DynamicResource TextMuted}" FontSize="11"/>
                         </StackPanel>
                         <TextBox Grid.Column="1" Text="{Binding Settings.MonitorIntervalMinutes}" VerticalAlignment="Center"/>
                     </Grid>
 
                     <!-- Low Disk Warning Threshold -->
-                    <Grid Margin="0,0,0,14">
+                    <Grid Margin="0,0,0,12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="130"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Critical Low Space Threshold (GB)" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="Trigger critical warning when free space drops below this level (Default: 10 GB)" Foreground="{StaticResource TextMuted}" FontSize="11.5"/>
+                            <TextBlock Text="Warning Space Threshold (GB)" FontWeight="SemiBold" FontSize="12"/>
+                            <TextBlock Text="Trigger warning alert when free space drops below this level (Default: 25 GB)" Foreground="{DynamicResource TextMuted}" FontSize="11"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding Settings.LowDiskWarningThresholdGB}" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Settings.WarningThresholdGb}" VerticalAlignment="Center"/>
                     </Grid>
 
-                    <!-- Daily Growth Alert Threshold -->
+                    <!-- Critical Low Disk Warning Threshold -->
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="130"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Rapid Growth Trigger (GB / 24h)" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="Alert when daily consumption exceeds this rate (Default: 5 GB/day)" Foreground="{StaticResource TextMuted}" FontSize="11.5"/>
+                            <TextBlock Text="Critical Low Space Threshold (GB)" FontWeight="SemiBold" FontSize="12"/>
+                            <TextBlock Text="Trigger critical emergency alert when free space drops below this level (Default: 10 GB)" Foreground="{DynamicResource TextMuted}" FontSize="11"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding Settings.GrowthAlertThresholdGBPerDay}" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Settings.CriticalThresholdGb}" VerticalAlignment="Center"/>
                     </Grid>
                 </StackPanel>
             </Border>
 
             <!-- Group 2: Scanning & Automation -->
-            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,18">
+            <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="INDEXING &amp; SCANNER PARAMETERS" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,16"/>
+                    <TextBlock Text="INDEXING &amp; SCANNER PARAMETERS" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,14"/>
 
                     <!-- Auto Scan on Launch -->
-                    <CheckBox IsChecked="{Binding Settings.AutoScanOnLaunch}" Margin="0,0,0,16">
+                    <CheckBox IsChecked="{Binding Settings.AutoScanOnLaunch}" Margin="0,0,0,14">
                         <StackPanel Margin="8,0,0,0">
-                            <TextBlock Text="Run Automatic Storage Scan on Startup" FontWeight="Bold" FontSize="13"/>
-                            <TextBlock Text="Initiates a fast asynchronous scan immediately when C:Watch opens." Foreground="{StaticResource TextMuted}" FontSize="11.5" Margin="0,2,0,0"/>
+                            <TextBlock Text="Run Automatic Storage Scan on Startup" FontWeight="Bold" FontSize="12.5"/>
+                            <TextBlock Text="Initiates a fast asynchronous scan immediately when C:Watch opens." Foreground="{DynamicResource TextMuted}" FontSize="11" Margin="0,2,0,0"/>
                         </StackPanel>
                     </CheckBox>
-
-                    <!-- Top Largest Files Limit -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="130"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="Top Largest Files Locator Index Limit" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="Number of top files tracked in memory (Default: 100)" Foreground="{StaticResource TextMuted}" FontSize="11.5"/>
-                        </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding Settings.TopLargestFilesLimit}" VerticalAlignment="Center"/>
-                    </Grid>
                 </StackPanel>
             </Border>
 
             <!-- Group 3: Snapshot Retention -->
-            <Border Style="{StaticResource CardBorder}">
+            <Border Style="{DynamicResource CardBorder}">
                 <StackPanel>
-                    <TextBlock Text="SQLITE ARCHIVE RETENTION" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,16"/>
+                    <TextBlock Text="SQLITE ARCHIVE RETENTION" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,14"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -137,10 +151,10 @@
                             <ColumnDefinition Width="130"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="Snapshot History Retention (Days)" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="Automatically purges historical snapshots older than this limit to maintain a compact database." Foreground="{StaticResource TextMuted}" FontSize="11.5"/>
+                            <TextBlock Text="Snapshot History Retention (Days)" FontWeight="SemiBold" FontSize="12"/>
+                            <TextBlock Text="Automatically purges historical snapshots older than this limit to maintain a compact database." Foreground="{DynamicResource TextMuted}" FontSize="11"/>
                         </StackPanel>
-                        <TextBox Grid.Column="1" Text="{Binding Settings.SnapshotRetentionDays}" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Settings.RetentionDays}" VerticalAlignment="Center"/>
                     </Grid>
                 </StackPanel>
             </Border>

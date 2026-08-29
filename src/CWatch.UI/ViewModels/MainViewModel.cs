@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows.Input;
 using CWatch.Core.Interfaces;
 using CWatch.Core.Models;
+using CWatch.UI.Services;
 
 namespace CWatch.UI.ViewModels;
 
@@ -47,6 +48,34 @@ public sealed class MainViewModel : ViewModelBase
         set => SetProperty(ref _driveStatus, value);
     }
 
+    public string CurrentThemeMode
+    {
+        get => _settingsService.Settings.AppTheme;
+        set
+        {
+            _settingsService.Settings.AppTheme = value;
+            _ = _settingsService.SaveSettingsAsync();
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ThemeModeLabel));
+            OnPropertyChanged(nameof(ThemeModeTooltip));
+            ApplyThemeFromSetting(value);
+        }
+    }
+
+    public string ThemeModeLabel => CurrentThemeMode switch
+    {
+        "Light" => "LIGHT",
+        "System" => "AUTO",
+        _ => "DARK"
+    };
+
+    public string ThemeModeTooltip => CurrentThemeMode switch
+    {
+        "Light" => "Theme: Light (Click to switch to Auto/System)",
+        "System" => "Theme: Auto/System (Click to switch to Dark)",
+        _ => "Theme: Dark Cockpit (Click to switch to Light)"
+    };
+
     // Sub-ViewModels
     public DashboardViewModel DashboardVM { get; }
     public ExplorerViewModel ExplorerVM { get; }
@@ -75,6 +104,8 @@ public sealed class MainViewModel : ViewModelBase
     public ICommand NavigateCommand { get; }
     public ICommand StartScanCommand { get; }
     public ICommand CancelScanCommand { get; }
+    public ICommand ToggleThemeCommand { get; }
+    public ICommand SetThemeCommand { get; }
 
     public MainViewModel(
         IFileSystemScanner scanner,
@@ -114,12 +145,35 @@ public sealed class MainViewModel : ViewModelBase
 
         StartScanCommand = new AsyncRelayCommand(StartFullScanAsync, () => !IsScanning);
         CancelScanCommand = new RelayCommand(CancelScan, () => IsScanning);
+        ToggleThemeCommand = new RelayCommand(ToggleTheme);
+        SetThemeCommand = new RelayCommand(param =>
+        {
+            if (param is string themeStr) CurrentThemeMode = themeStr;
+        });
 
         _driveMonitor.DriveStatusChanged += (s, status) =>
         {
             DriveStatus = status;
             DashboardVM.DriveStatus = status;
         };
+    }
+
+    public void ToggleTheme()
+    {
+        CurrentThemeMode = CurrentThemeMode switch
+        {
+            "Dark" => "Light",
+            "Light" => "System",
+            _ => "Dark"
+        };
+    }
+
+    private void ApplyThemeFromSetting(string themeName)
+    {
+        if (Enum.TryParse<ThemeMode>(themeName, true, out var mode))
+        {
+            ThemeManager.Instance.SetTheme(mode);
+        }
     }
 
     public void NavigateTo(string page)
@@ -134,6 +188,8 @@ public sealed class MainViewModel : ViewModelBase
     public async Task InitializeAsync()
     {
         await _settingsService.LoadSettingsAsync();
+        ApplyThemeFromSetting(_settingsService.Settings.AppTheme);
+
         await _snapshotRepo.InitializeAsync();
 
         DriveStatus = _storageAnalyzer.GetDriveStatus("C:");

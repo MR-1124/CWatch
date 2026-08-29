@@ -8,27 +8,27 @@
     <Grid>
         <!-- Main Cleanup Page Content -->
         <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="32,24,32,36">
+            <StackPanel Margin="28,20,28,32">
                 <!-- Header Row -->
-                <Grid Margin="0,0,0,20">
+                <Grid Margin="0,0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <StackPanel>
-                        <TextBlock Text="Recommended Safe Cleanup" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Variable Display, Aptos Display, Segoe UI, sans-serif"/>
-                        <TextBlock Text="Reclaim disk space with explicit safety classifications, human rationale, and dry-run protection" FontSize="12.5" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
+                        <TextBlock Text="Recommended Safe Cleanup" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
+                        <TextBlock Text="Reclaim disk space with explicit safety classifications, human rationale, and dry-run protection" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="🔄 RESCAN" Command="{Binding ScanCandidatesCommand}" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Padding="12,7" FontSize="11"/>
-                        <Button Content="✨ CLEAN SELECTED SPACE" Command="{Binding RequestCleanSelectedCommand}" Style="{StaticResource SuccessButton}" Padding="16,7" FontSize="11"/>
+                        <Button Content="RESCAN" Command="{Binding ScanCandidatesCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,8,0" Padding="12,6" FontSize="11"/>
+                        <Button Content="⚡ CLEAN SELECTED SPACE" Command="{Binding RequestCleanSelectedCommand}" Style="{DynamicResource SuccessButton}" Padding="14,6" FontSize="11"/>
                     </StackPanel>
                 </Grid>
 
                 <!-- Selection & Total Summary Banner -->
-                <Border Style="{StaticResource HeroCardBorder}" Margin="0,0,0,18" Padding="14,12">
+                <Border Style="{DynamicResource HeroCardBorder}" Margin="0,0,0,14" Padding="14,10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -37,26 +37,26 @@
 
                         <!-- Selection Controls -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="SELECT SAFE ONLY" Command="{Binding SelectAllSafeCommand}" Style="{StaticResource ChipButton}" Margin="0,0,6,0"/>
-                            <Button Content="DESELECT ALL" Command="{Binding DeselectAllCommand}" Style="{StaticResource ChipButton}"/>
+                            <Button Content="SELECT SAFE ONLY" Command="{Binding SelectAllSafeCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="8,4" FontSize="10"/>
+                            <Button Content="DESELECT ALL" Command="{Binding DeselectAllCommand}" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10"/>
                         </StackPanel>
 
                         <!-- Total Space Selected -->
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="SELECTED TO RECLAIM: " FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding FormattedTotalSelected, Mode=OneWay}" FontSize="16" FontWeight="Bold" Foreground="{StaticResource AccentGreen}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                            <TextBlock Text="SELECTED TO RECLAIM: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding FormattedTotalSelected, Mode=OneWay}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center" Margin="6,0,0,0"/>
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- Status message -->
-                <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
+                <TextBlock Text="{Binding StatusMessage}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,12"/>
 
                 <!-- Cleanup Candidates List -->
                 <ItemsControl ItemsSource="{Binding Candidates}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{StaticResource CardBorder}" Margin="0,0,0,12" Padding="16">
+                            <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,10" Padding="14">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -77,20 +77,20 @@
 
                                         <!-- Title & Safety Badge -->
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="13.5" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                             
                                             <!-- Safety Badge Pill -->
-                                            <Border Background="{Binding SafetyBadgeColor}" CornerRadius="3" Padding="6,2" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding SafetyBadgeText}" FontSize="9" FontWeight="Bold" Foreground="White"/>
+                                            <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderLight}" BorderThickness="1" CornerRadius="2" Padding="6,1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding SafetyBadgeText}" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}"/>
                                             </Border>
                                         </StackPanel>
 
                                         <!-- Size Pill -->
-                                        <TextBlock Grid.Column="2" Text="{Binding FormattedSize, Mode=OneWay}" FontSize="13.5" FontWeight="Bold" Foreground="{StaticResource AccentOrange}" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding FormattedSize, Mode=OneWay}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}" VerticalAlignment="Center"/>
                                     </Grid>
 
                                     <!-- Detailed Explanations -->
-                                    <Border Grid.Row="1" Background="{StaticResource BgCardSecondary}" CornerRadius="4" Padding="12,10" Margin="28,12,0,10" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1">
+                                    <Border Grid.Row="1" Background="{DynamicResource BgCardNested}" CornerRadius="3" Padding="12,8" Margin="28,10,0,8" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
@@ -98,28 +98,27 @@
                                                 <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
 
-                                            <!-- Why is it here? -->
-                                            <StackPanel Grid.Row="0" Margin="0,0,0,6">
-                                                <TextBlock Text="WHY IS THIS HERE?" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextMuted}"/>
-                                                <TextBlock Text="{Binding Reason}" FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                                            </StackPanel>
-
-                                            <!-- What happens if cleaned? -->
-                                            <StackPanel Grid.Row="1" Margin="0,0,0,6">
-                                                <TextBlock Text="WHAT HAPPENS AFTER CLEANUP?" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextMuted}"/>
-                                                <TextBlock Text="{Binding WhatWillHappen}" FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                                            </StackPanel>
-
                                             <!-- Path -->
-                                            <StackPanel Grid.Row="2">
-                                                <TextBlock Text="{Binding Path}" FontSize="11" Foreground="{StaticResource TextMuted}" TextTrimming="CharacterEllipsis" FontFamily="Consolas, Segoe UI"/>
+                                            <TextBlock Grid.Row="0" Text="{Binding TargetPath}" Foreground="{DynamicResource TextMuted}" FontSize="10.5" FontFamily="Consolas, Cascadia Code, monospace"/>
+
+                                            <!-- Why safe? -->
+                                            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,0">
+                                                <TextBlock Text="RATIONALE: " FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                                                <TextBlock Text="{Binding HumanRationale}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                            </StackPanel>
+
+                                            <!-- Consequence -->
+                                            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,2,0,0">
+                                                <TextBlock Text="SIDE EFFECT: " FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                                                <TextBlock Text="{Binding ConsequenceExplanation}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>
 
-                                    <!-- Action Links -->
+                                    <!-- Candidate Action Buttons -->
                                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="28,0,0,0">
-                                        <Button Content="📂 OPEN LOCATION" Command="{Binding DataContext.OpenPathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{StaticResource AccentOrange}" BorderThickness="0" Cursor="Hand" FontSize="10.5" FontWeight="Bold" Padding="0,2"/>
+                                        <Button Content="OPEN IN EXPLORER" Command="{Binding DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="8,3" FontSize="9.5" Margin="0,0,6,0"/>
+                                        <Button Content="PROCESS LOCK CHECK" Command="{Binding DataContext.CheckProcessesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="8,3" FontSize="9.5"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -129,39 +128,45 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Dry-Run Confirmation Modal Overlay -->
-        <Border Background="#E607080A" Visibility="{Binding ShowConfirmationModal, Converter={StaticResource BoolToVisibility}}">
-            <Border Style="{StaticResource HeroCardBorder}" Width="500" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24">
+        <!-- Dry Run & Execution Modal Overlay -->
+        <Border Background="#BF05070A" Visibility="{Binding IsConfirmModalOpen, Converter={StaticResource BoolToVisibility}}">
+            <Border Style="{DynamicResource HeroCardBorder}" Width="560" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24">
                 <StackPanel>
-                    <TextBlock Text="Confirm Storage Cleanup" FontSize="18" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,4"/>
-                    <TextBlock Text="Review the selected items before proceeding. This will permanently remove the selected cache files and disposable temporary data." FontSize="12" Foreground="{StaticResource TextSecondary}" TextWrapping="Wrap" Margin="0,0,0,16"/>
+                    <TextBlock Text="Confirm Safe Space Reclaim" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
+                    <TextBlock Text="The following operations will be performed safely according to Windows safety guidelines." Foreground="{DynamicResource TextSecondary}" FontSize="11.5" Margin="0,0,0,16"/>
 
-                    <!-- Summary Card -->
-                    <Border Background="{StaticResource BgCardSecondary}" CornerRadius="4" Padding="14" Margin="0,0,0,16" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1">
+                    <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="12" Margin="0,0,0,16">
                         <StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="TOTAL SPACE TO RECLAIM: " Foreground="{StaticResource TextMuted}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                                <TextBlock Text="{Binding FormattedTotalSelected, Mode=OneWay}" FontWeight="Bold" Foreground="{StaticResource AccentGreen}" FontSize="14" VerticalAlignment="Center" Margin="6,0,0,0"/>
-                            </StackPanel>
+                            <TextBlock Text="{Binding FormattedTotalSelected, StringFormat='Total Target Payload: {0}'}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource AccentGreen}"/>
+                            <TextBlock Text="{Binding DryRunResults.Count, StringFormat='Target Locations: {0}'}" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Progress Indicator when cleaning -->
-                    <StackPanel Visibility="{Binding IsCleaning, Converter={StaticResource BoolToVisibility}}" Margin="0,0,0,16">
-                        <ProgressBar IsIndeterminate="True" Height="4" BorderThickness="0" Background="{StaticResource BgInput}" Foreground="{StaticResource AccentGreen}" Margin="0,0,0,6"/>
-                        <TextBlock Text="{Binding CurrentCleaningProgress}" FontSize="11.5" Foreground="{StaticResource TextSecondary}" HorizontalAlignment="Center"/>
-                    </StackPanel>
+                    <!-- Dry Run Results List -->
+                    <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto" Margin="0,0,0,18">
+                        <ItemsControl ItemsSource="{Binding DryRunResults}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="2" Padding="8,4" Margin="0,0,0,4">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding FormattedBytes}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
 
                     <!-- Modal Actions -->
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <Button Content="CANCEL" Command="{Binding CancelConfirmationCommand}" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Padding="14,7" FontSize="11"/>
-                        <Button Grid.Column="1" Content="🚀 PROCEED &amp; CLEAN" Command="{Binding ConfirmCleanCommand}" Style="{StaticResource SuccessButton}" Padding="16,7" FontSize="11" IsEnabled="{Binding IsCleaning, Converter={StaticResource InverseBoolToVisibility}}"/>
-                    </Grid>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="CANCEL" Command="{Binding CancelCleanupCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,8,0" Padding="14,6" FontSize="11"/>
+                        <Button Content="⚡ PROCEED WITH CLEANUP" Command="{Binding ExecuteCleanSelectedCommand}" Style="{DynamicResource SuccessButton}" Padding="16,6" FontSize="11"/>
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </Border>

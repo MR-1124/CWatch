@@ -6,42 +6,42 @@
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="980">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="32,24,32,36">
+        <StackPanel Margin="28,20,28,32">
             <!-- Header Row -->
-            <Grid Margin="0,0,0,20">
+            <Grid Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="Recurring Growth Detector" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Variable Display, Aptos Display, Segoe UI, sans-serif"/>
-                    <TextBlock Text="What Keeps Coming Back? Detect regenerating caches, runaway build folders &amp; background bloat" FontSize="12.5" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
+                    <TextBlock Text="Recurring Growth Detector" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
+                    <TextBlock Text="What Keeps Coming Back? Detect regenerating caches, runaway build folders &amp; background bloat" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
                 </StackPanel>
 
-                <Button Grid.Column="1" Content="🔄 RE-ANALYZE" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" VerticalAlignment="Center" Padding="12,7" FontSize="11"/>
+                <Button Grid.Column="1" Content="RE-ANALYZE" Command="{Binding RefreshCommand}" Style="{DynamicResource SecondaryButton}" VerticalAlignment="Center" Padding="12,6" FontSize="11"/>
             </Grid>
 
             <!-- Overview Intelligence Banner -->
-            <Border Style="{StaticResource HeroCardBorder}" Padding="14" Margin="0,0,0,18">
+            <Border Style="{DynamicResource HeroCardBorder}" Padding="14" Margin="0,0,0,14">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="💡" FontSize="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                    <TextBlock Grid.Column="1" Text="Recurring growth occurs when build engines, package managers, or background services re-accumulate large caches after you clean them. C:Watch monitors these cycles to pinpoint root causes." Foreground="{StaticResource TextSecondary}" FontSize="12" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource AccentCyan}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="Recurring growth occurs when build engines, package managers, or background services re-accumulate large caches after you clean them. C:Watch monitors these cycles to pinpoint root causes." Foreground="{DynamicResource TextSecondary}" FontSize="11.5" TextWrapping="Wrap" VerticalAlignment="Center"/>
                 </Grid>
             </Border>
 
             <!-- Status message if no alerts -->
-            <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,0,0,14"/>
+            <TextBlock Text="{Binding StatusMessage}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,12"/>
 
             <!-- Alerts List -->
             <ItemsControl ItemsSource="{Binding Alerts}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,14" Padding="18">
+                        <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,12" Padding="16">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -57,34 +57,34 @@
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border Background="{StaticResource AccentAmberBg}" BorderBrush="{StaticResource AccentAmber}" BorderThickness="1" CornerRadius="3" Padding="6,2" Margin="0,0,10,0">
-                                            <TextBlock Text="🔄 RECURRING ACCUMULATION" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource AccentAmber}"/>
+                                        <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource AccentAmber}" BorderThickness="1" CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
+                                            <TextBlock Text="RECURRING ACCUMULATION" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentAmber}"/>
                                         </Border>
-                                        <TextBlock Text="{Binding DisplayPath}" FontWeight="Bold" FontSize="13.5" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding DisplayPath}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     </StackPanel>
 
-                                    <Border Grid.Column="1" Background="{StaticResource BgCardSecondary}" CornerRadius="3" Padding="8,3" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1">
-                                        <TextBlock Text="{Binding FormattedDailyRate, StringFormat='📈 REGROWTH ~{0}'}" FontWeight="Bold" Foreground="{StaticResource AccentAmber}" FontSize="11"/>
+                                    <Border Grid.Column="1" Background="{DynamicResource BgCardNested}" CornerRadius="3" Padding="8,3" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
+                                        <TextBlock Text="{Binding FormattedDailyRate, StringFormat='REGROWTH ~{0}'}" FontWeight="Bold" Foreground="{DynamicResource AccentAmber}" FontSize="10.5"/>
                                     </Border>
                                 </Grid>
 
                                 <!-- Middle Row: Explanation & Metrics -->
-                                <StackPanel Grid.Row="1" Margin="0,12,0,14">
-                                    <TextBlock Text="{Binding Explanation}" Foreground="{StaticResource TextSecondary}" FontSize="12" TextWrapping="Wrap"/>
+                                <StackPanel Grid.Row="1" Margin="0,10,0,12">
+                                    <TextBlock Text="{Binding Explanation}" Foreground="{DynamicResource TextSecondary}" FontSize="11.5" TextWrapping="Wrap"/>
                                     
                                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                        <TextBlock Text="CURRENT WEIGHT: " Foreground="{StaticResource TextMuted}" FontSize="11" FontWeight="Bold"/>
-                                        <TextBlock Text="{Binding FormattedCurrentSize, Mode=OneWay}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontSize="11" Margin="0,0,16,0"/>
+                                        <TextBlock Text="CURRENT WEIGHT: " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding FormattedCurrentSize, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontSize="10.5" Margin="0,0,16,0"/>
                                         
-                                        <TextBlock Text="REGROWN DELTA: " Foreground="{StaticResource TextMuted}" FontSize="11" FontWeight="Bold"/>
-                                        <TextBlock Text="{Binding FormattedRegrown, StringFormat='{}{0} re-accumulated'}" FontWeight="Bold" Foreground="{StaticResource AccentAmber}" FontSize="11"/>
+                                        <TextBlock Text="REGROWN DELTA: " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold"/>
+                                        <TextBlock Text="{Binding FormattedRegrown, StringFormat='{}{0} re-accumulated'}" FontWeight="Bold" Foreground="{DynamicResource AccentAmber}" FontSize="10.5"/>
                                     </StackPanel>
                                 </StackPanel>
 
                                 <!-- Bottom Row: Actions -->
                                 <StackPanel Grid.Row="2" Orientation="Horizontal">
-                                    <Button Content="📂 INSPECT DIRECTORY" Command="{Binding DataContext.InspectItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{StaticResource SecondaryButton}" Padding="10,5" FontSize="10.5" Margin="0,0,8,0"/>
-                                    <Button Content="DISMISS ALERT" Command="{Binding DataContext.IgnoreItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{StaticResource TextMuted}" BorderThickness="0" Cursor="Hand" Padding="8,5" FontSize="10.5" FontWeight="Bold"/>
+                                    <Button Content="INSPECT DIRECTORY" Command="{Binding DataContext.InspectItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="10,4" FontSize="10" Margin="0,0,8,0"/>
+                                    <Button Content="DISMISS ALERT" Command="{Binding DataContext.IgnoreItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{DynamicResource TextMuted}" BorderThickness="0" Cursor="Hand" Padding="8,4" FontSize="10" FontWeight="Bold"/>
                                 </StackPanel>
                             </Grid>
                         </Border>

@@ -181,6 +181,24 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _statusMessage, value);
     }
 
+    public string SelectedTheme
+    {
+        get => Settings.AppTheme;
+        set
+        {
+            if (Settings.AppTheme != value)
+            {
+                Settings.AppTheme = value;
+                OnPropertyChanged();
+                if (Enum.TryParse<CWatch.UI.Services.ThemeMode>(value, true, out var mode))
+                {
+                    CWatch.UI.Services.ThemeManager.Instance.SetTheme(mode);
+                }
+                _ = SaveSettingsAsync();
+            }
+        }
+    }
+
     public ICommand SaveSettingsCommand { get; }
     public ICommand ResetDefaultsCommand { get; }
 
@@ -198,6 +216,12 @@ public sealed class SettingsViewModel : ViewModelBase
     {
         await _settingsService.SaveSettingsAsync();
         StatusMessage = "Settings saved successfully.";
+        
+        if (Enum.TryParse<CWatch.UI.Services.ThemeMode>(Settings.AppTheme, true, out var mode))
+        {
+            CWatch.UI.Services.ThemeManager.Instance.SetTheme(mode);
+        }
+
         if (Settings.MonitoringEnabled && !_driveMonitor.IsRunning)
         {
             _driveMonitor.StartMonitoring(Settings.MonitorIntervalMinutes);
@@ -213,5 +237,6 @@ public sealed class SettingsViewModel : ViewModelBase
         Settings = new AppSettings();
         await _settingsService.SaveSettingsAsync();
         StatusMessage = "Settings restored to defaults.";
+        SelectedTheme = Settings.AppTheme;
     }
 }

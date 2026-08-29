@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="980">
-    <Grid Margin="32,24,32,32">
+    <Grid Margin="28,20,28,28">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -13,26 +13,26 @@
         </Grid.RowDefinitions>
 
         <!-- Header Row -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
+        <Grid Grid.Row="0" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel>
-                <TextBlock Text="Duplicate Files Analyzer" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Variable Display, Aptos Display, Segoe UI, sans-serif"/>
-                <TextBlock Text="Multi-phase SHA-256 byte hash detection to safely identify identical redundant files" FontSize="12.5" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
+                <TextBlock Text="Duplicate Files Analyzer" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
+                <TextBlock Text="Multi-phase SHA-256 byte hash detection to safely identify identical redundant files" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
             </StackPanel>
 
             <!-- Actions -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="🔍 SCAN DUPLICATES" Command="{Binding StartScanCommand}" Style="{StaticResource ModernButton}" Margin="0,0,8,0" Padding="14,7" FontSize="11"/>
-                <Button Content="🗑 DELETE SELECTED" Command="{Binding DeleteSelectedDuplicatesCommand}" Style="{StaticResource DangerButton}" Padding="14,7" FontSize="11"/>
+                <Button Content="⚡ SCAN DUPLICATES" Command="{Binding StartScanCommand}" Style="{DynamicResource ModernButton}" Margin="0,0,8,0" Padding="12,6" FontSize="11"/>
+                <Button Content="🗑 MOVE TO RECYCLE BIN" Command="{Binding DeleteSelectedDuplicatesCommand}" Style="{DynamicResource DangerButton}" Padding="12,6" FontSize="11"/>
             </StackPanel>
         </Grid>
 
         <!-- Metrics & Smart Selection Banner -->
-        <Border Grid.Row="1" Style="{StaticResource HeroCardBorder}" Padding="14,12" Margin="0,0,0,14">
+        <Border Grid.Row="1" Style="{DynamicResource HeroCardBorder}" Padding="14,10" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -41,19 +41,19 @@
 
                 <!-- Left: Status & Reclaimable Metric -->
                 <StackPanel VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                        <TextBlock Text="RECLAIMABLE DUPLICATE SPACE: " FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding FormattedWastedBytes}" FontSize="15" FontWeight="Bold" Foreground="{StaticResource AccentOrange}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
+                        <TextBlock Text="RECLAIMABLE DUPLICATE SPACE: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding FormattedWastedBytes}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                     </StackPanel>
-                    <TextBlock Text="{Binding StatusMessage}" FontSize="11.5" Foreground="{StaticResource TextSecondary}"/>
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                 </StackPanel>
 
                 <!-- Right: Smart Selection Presets -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="KEEP NEWEST" Command="{Binding KeepNewestCopiesCommand}" Style="{StaticResource ChipButton}" Margin="0,0,6,0" ToolTip="Keeps the most recent copy in each group"/>
-                    <Button Content="KEEP OLDEST" Command="{Binding KeepOldestCopiesCommand}" Style="{StaticResource ChipButton}" Margin="0,0,6,0" ToolTip="Keeps the oldest original file"/>
-                    <Button Content="SELECT ALL" Command="{Binding SelectAllDuplicatesCommand}" Style="{StaticResource ChipButton}" Margin="0,0,6,0"/>
-                    <Button Content="DESELECT ALL" Command="{Binding DeselectAllDuplicatesCommand}" Style="{StaticResource ChipButton}"/>
+                    <Button Content="KEEP NEWEST" Command="{Binding KeepNewestCopiesCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="8,4" FontSize="10" ToolTip="Keeps the most recent copy in each group"/>
+                    <Button Content="KEEP OLDEST" Command="{Binding KeepOldestCopiesCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="8,4" FontSize="10" ToolTip="Keeps the oldest original file"/>
+                    <Button Content="SELECT ALL" Command="{Binding SelectAllDuplicatesCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="8,4" FontSize="10"/>
+                    <Button Content="DESELECT ALL" Command="{Binding DeselectAllDuplicatesCommand}" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10"/>
                 </StackPanel>
             </Grid>
         </Border>
@@ -63,21 +63,21 @@
             <ItemsControl ItemsSource="{Binding DuplicateGroups}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{StaticResource CardBorder}" Margin="0,0,0,12" Padding="16">
+                        <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,10" Padding="14">
                             <StackPanel>
                                 <!-- Group Header -->
-                                <Grid Margin="0,0,0,10">
+                                <Grid Margin="0,0,0,8">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border Background="{StaticResource AccentOrange}" CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
-                                            <TextBlock Text="{Binding Files.Count, StringFormat='{}{0} IDENTICAL COPIES'}" FontSize="9.5" FontWeight="Bold" Foreground="White"/>
+                                        <Border Background="{DynamicResource AccentOrange}" CornerRadius="2" Padding="6,2" Margin="0,0,8,0">
+                                            <TextBlock Text="{Binding Files.Count, StringFormat='{}{0} IDENTICAL COPIES'}" FontSize="9" FontWeight="Bold" Foreground="White"/>
                                         </Border>
-                                        <TextBlock Text="FILE WEIGHT: " Foreground="{StaticResource TextMuted}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding FormattedSize, Mode=OneWay}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontSize="11.5" VerticalAlignment="Center"/>
+                                        <TextBlock Text="FILE WEIGHT: " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding FormattedSize, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontSize="11" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </Grid>
 
@@ -85,7 +85,7 @@
                                 <ItemsControl ItemsSource="{Binding Files}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate>
-                                            <Border Background="{StaticResource BgCardSecondary}" CornerRadius="4" Padding="10,8" Margin="0,0,0,4" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1">
+                                            <Border Background="{DynamicResource BgCardNested}" CornerRadius="3" Padding="10,6" Margin="0,0,0,4" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="Auto"/>
@@ -98,13 +98,15 @@
                                                     <CheckBox Grid.Column="0" IsChecked="{Binding IsSelectedForDeletion}" Margin="0,0,10,0" ToolTip="Select for deletion"/>
 
                                                     <!-- File Path -->
-                                                    <TextBlock Grid.Column="1" Text="{Binding FullPath}" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="11.5" FontFamily="Consolas, Segoe UI"/>
+                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding FullPath}" Foreground="{DynamicResource TextPrimary}" FontSize="11" FontFamily="Consolas, Cascadia Code, monospace" TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
 
-                                                    <!-- Last Modified -->
-                                                    <TextBlock Grid.Column="2" Text="{Binding LastModifiedUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Foreground="{StaticResource TextMuted}" FontSize="11" Margin="12,0" VerticalAlignment="Center"/>
+                                                    <!-- Modified Date -->
+                                                    <TextBlock Grid.Column="2" Text="{Binding LastModifiedUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Foreground="{DynamicResource TextMuted}" FontSize="10.5" Margin="14,0" VerticalAlignment="Center"/>
 
-                                                    <!-- Open Location Button -->
-                                                    <Button Grid.Column="3" Content="📂 OPEN" Command="{Binding DataContext.ShowInExplorerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{StaticResource AccentOrange}" BorderThickness="0" Cursor="Hand" FontSize="10.5" FontWeight="Bold" Padding="4,2"/>
+                                                    <!-- Actions -->
+                                                    <Button Grid.Column="3" Content="OPEN FOLDER" Command="{Binding DataContext.ShowInExplorerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="8,3" FontSize="9.5"/>
                                                 </Grid>
                                             </Border>
                                         </DataTemplate>

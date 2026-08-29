@@ -6,44 +6,44 @@
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="980">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="32,24,32,36">
+        <StackPanel Margin="28,20,28,32">
             <!-- Header Title Row -->
-            <Grid Margin="0,0,0,20">
+            <Grid Margin="0,0,0,18">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel>
-                    <TextBlock Text="System Volume Telemetry" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Variable Display, Aptos Display, Segoe UI, sans-serif"/>
-                    <TextBlock Text="Continuous storage intelligence, differential growth tracking &amp; safe recovery" FontSize="12.5" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
+                    <TextBlock Text="System Volume Telemetry" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
+                    <TextBlock Text="Continuous storage intelligence, differential growth tracking &amp; safe recovery" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
                 </StackPanel>
 
                 <!-- Quick Action Buttons -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Style="{StaticResource SecondaryButton}" Content="📈 Inspect Timeline" Command="{Binding InvestigateGrowthCommand}" Margin="0,0,8,0" Padding="12,7" FontSize="11"/>
-                    <Button Style="{StaticResource SuccessButton}" Content="✨ Safe Cleanup" Command="{Binding RecommendedCleanupCommand}" Padding="14,7" FontSize="11"/>
+                    <Button Style="{DynamicResource SecondaryButton}" Content="📈 Inspect Timeline" Command="{Binding InvestigateGrowthCommand}" Margin="0,0,8,0" Padding="12,6" FontSize="11"/>
+                    <Button Style="{DynamicResource SuccessButton}" Content="⚡ Safe Cleanup" Command="{Binding RecommendedCleanupCommand}" Padding="14,6" FontSize="11"/>
                 </StackPanel>
             </Grid>
 
             <!-- Emergency Warning Banner -->
-            <Border Background="{StaticResource AccentRedBg}" BorderBrush="{StaticResource AccentRed}" BorderThickness="1" CornerRadius="6" Padding="14" Margin="0,0,0,18"
+            <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource AccentRed}" BorderThickness="1" CornerRadius="4" Padding="12" Margin="0,0,0,16"
                     Visibility="{Binding HasEmergencyAlert, Converter={StaticResource BoolToVisibility}}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="🚨" FontSize="22" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                    <Border Width="6" Background="{DynamicResource AccentRed}" CornerRadius="2" Margin="0,0,10,0"/>
                     <StackPanel Grid.Column="1">
-                        <TextBlock Text="CRITICAL CAPACITY ALERT" FontWeight="Bold" FontSize="12" Foreground="{StaticResource AccentRed}"/>
-                        <TextBlock Text="{Binding EmergencyMessage}" Foreground="#FECACA" FontSize="12" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                        <TextBlock Text="CRITICAL CAPACITY ALERT" FontWeight="Bold" FontSize="11" Foreground="{DynamicResource AccentRed}"/>
+                        <TextBlock Text="{Binding EmergencyMessage}" Foreground="{DynamicResource TextPrimary}" FontSize="11.5" TextWrapping="Wrap" Margin="0,2,0,0"/>
                     </StackPanel>
                 </Grid>
             </Border>
 
             <!-- Main Drive Status Hero Card -->
-            <Border Style="{StaticResource HeroCardBorder}" Margin="0,0,0,20">
+            <Border Style="{DynamicResource HeroCardBorder}" Margin="0,0,0,16">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -61,20 +61,20 @@
                         <!-- Left: Drive Identity & Trend -->
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Border Background="{StaticResource AccentOrange}" CornerRadius="4" Width="26" Height="26" Margin="0,0,10,0">
-                                    <TextBlock Text="C:" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border Background="{DynamicResource AccentOrange}" CornerRadius="3" Width="24" Height="24" Margin="0,0,10,0">
+                                    <TextBlock Text="C:" FontSize="12" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock Text="LOCAL DISK (C:)" FontWeight="Bold" FontSize="16" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center"/>
-                                <Border Background="{StaticResource BgCardSecondary}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding DriveStatus.FileSystem, StringFormat={}{0} FILE SYSTEM}" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource TextSecondary}"/>
+                                <TextBlock Text="LOCAL DISK (C:)" FontWeight="Bold" FontSize="15" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
+                                <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding DriveStatus.FileSystem, StringFormat={}{0} FILE SYSTEM}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}"/>
                                 </Border>
                             </StackPanel>
 
                             <!-- Trend Indicator Badge -->
-                            <Border Background="{StaticResource BgCardSecondary}" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1" CornerRadius="4" Padding="10,5" Margin="0,12,0,0" HorizontalAlignment="Left">
+                            <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="10,5" Margin="0,10,0,0" HorizontalAlignment="Left">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="📊 " FontSize="11" VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding TrendMessage}" FontSize="11.5" Foreground="{StaticResource AccentAmber}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                    <Rectangle Width="6" Height="6" RadiusX="3" RadiusY="3" Fill="{DynamicResource AccentAmber}" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding TrendMessage}" FontSize="11" Foreground="{DynamicResource AccentAmber}" FontWeight="SemiBold" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -82,84 +82,118 @@
                         <!-- Right: Free & Used numbers -->
                         <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
                             <TextBlock HorizontalAlignment="Right">
-                                <Run Text="{Binding DriveStatus.FreeBytes, Mode=OneWay, Converter={StaticResource SizeFormatter}}" FontSize="28" FontWeight="Bold" Foreground="{StaticResource AccentGreen}" FontFamily="Segoe UI Variable Display, Aptos Display, sans-serif"/>
-                                <Run Text=" FREE" FontSize="13" Foreground="{StaticResource TextMuted}" FontWeight="Bold"/>
+                                <Run Text="{Binding DriveStatus.FreeBytes, Mode=OneWay, Converter={StaticResource SizeFormatter}}" FontSize="26" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
+                                <Run Text=" FREE" FontSize="12" Foreground="{DynamicResource TextMuted}" FontWeight="Bold"/>
                             </TextBlock>
-                            <TextBlock HorizontalAlignment="Right" FontSize="12.5" Foreground="{StaticResource TextSecondary}" Margin="0,3,0,0">
-                                <Run Text="{Binding DriveStatus.UsedBytes, Mode=OneWay, Converter={StaticResource SizeFormatter}}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
-                                <Run Text=" ALLOCATED OF " Foreground="{StaticResource TextMuted}"/>
-                                <Run Text="{Binding DriveStatus.TotalBytes, Mode=OneWay, Converter={StaticResource SizeFormatter}}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}"/>
+                            <TextBlock HorizontalAlignment="Right" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0">
+                                <Run Text="{Binding DriveStatus.UsedBytes, Mode=OneWay, Converter={StaticResource SizeFormatter}}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                <Run Text=" ALLOCATED OF " Foreground="{DynamicResource TextMuted}"/>
+                                <Run Text="{Binding DriveStatus.TotalBytes, Mode=OneWay, Converter={StaticResource SizeFormatter}}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                             </TextBlock>
                         </StackPanel>
                     </Grid>
 
                     <!-- Usage Solid Signal Bar -->
-                    <Border Grid.Row="1" Background="{StaticResource BgInput}" Height="14" CornerRadius="4" Margin="0,18,0,8" ClipToBounds="True" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1">
+                    <Border Grid.Row="1" Background="{DynamicResource BgInput}" Height="12" CornerRadius="3" Margin="0,16,0,8" ClipToBounds="True" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
                         <Grid>
-                            <ProgressBar Value="{Binding DriveStatus.UsedPercentage, Mode=OneWay}" Maximum="100" Height="14" BorderThickness="0" Background="Transparent" Foreground="{StaticResource AccentOrange}"/>
+                            <ProgressBar Value="{Binding DriveStatus.UsedPercentage, Mode=OneWay}" Maximum="100" Height="12" BorderThickness="0" Background="Transparent" Foreground="{DynamicResource AccentOrange}"/>
                         </Grid>
                     </Border>
 
-                    <!-- Percentage Indicator labels -->
-                    <Grid Grid.Row="2">
-                        <TextBlock Text="{Binding DriveStatus.UsedPercentage, StringFormat={}{0:F1}% ALLOCATED}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Left"/>
-                        <TextBlock Text="{Binding DriveStatus.FreePercentage, StringFormat={}{0:F1}% AVAILABLE}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentGreen}" HorizontalAlignment="Right"/>
+                    <!-- Footer Telemetry Strip -->
+                    <Grid Grid.Row="2" Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding DriveStatus.UsedPercentage, StringFormat='{}{0:F1}% Capacity Consumed'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            <TextBlock Text=" • " Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Text="{Binding DriveStatus.FreePercentage, StringFormat='{}{0:F1}% Available Headroom'}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <TextBlock Text="RECLAIMABLE SAFE SPACE: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Text="{Binding FormattedSafeCleanupPotential}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}"/>
+                        </StackPanel>
                     </Grid>
                 </Grid>
             </Border>
 
-            <!-- Section Label -->
-            <Grid Margin="0,0,0,12">
+            <!-- 2-Column Split: Storage Category Matrix & Top Growth Culprit -->
+            <Grid Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.4*"/>
+                    <ColumnDefinition Width="16"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="SPACE ALLOCATION BY CATEGORY" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}"/>
-                <Button Grid.Column="1" Content="EXPLORE ALL FILES →" Command="{Binding OpenCategoryCommand}" Background="Transparent" Foreground="{StaticResource AccentOrange}" BorderThickness="0" Cursor="Hand" FontSize="11" FontWeight="Bold"/>
-            </Grid>
 
-            <!-- Categories Card List -->
-            <Border Style="{StaticResource CardBorder}" Padding="14,6">
-                <ItemsControl ItemsSource="{Binding Categories}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border BorderBrush="{StaticResource BorderSubtle}" BorderThickness="0,0,0,1" Padding="4,12">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="40"/>
-                                        <ColumnDefinition Width="240"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="110"/>
-                                        <ColumnDefinition Width="65"/>
-                                    </Grid.ColumnDefinitions>
+                <!-- Left: Storage Allocation Categories -->
+                <Border Grid.Column="0" Style="{DynamicResource CardBorder}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="STORAGE CATEGORY ALLOCATION" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Grid.Column="1" Text="BY BYTE WEIGHT" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                        </Grid>
 
-                                    <!-- Category Icon -->
-                                    <Border Grid.Column="0" Width="28" Height="28" CornerRadius="4" Background="{StaticResource BgCardSecondary}" HorizontalAlignment="Left" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding IconKey}" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <ItemsControl ItemsSource="{Binding Categories}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="12,8" Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Category Color Indicator Bar -->
+                                            <Rectangle Grid.Column="0" Width="4" Height="28" RadiusX="2" RadiusY="2" Fill="{Binding Category, Converter={StaticResource CategoryColorConverter}}" Margin="0,0,10,0"/>
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="11.5" Foreground="{DynamicResource TextPrimary}"/>
+                                                <TextBlock Text="{Binding Description}" FontSize="10" Foreground="{DynamicResource TextMuted}" Margin="0,1,0,0"/>
+                                            </StackPanel>
+
+                                            <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding FormattedSize}" FontWeight="Bold" FontSize="12" Foreground="{DynamicResource TextPrimary}" HorizontalAlignment="Right"/>
+                                                <TextBlock Text="{Binding Percentage, StringFormat='{}{0:F1}%'}" FontSize="10" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Right"/>
+                                            </StackPanel>
+                                        </Grid>
                                     </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
 
-                                    <!-- Category Title & Description -->
-                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="13" Foreground="{StaticResource TextPrimary}"/>
-                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{StaticResource TextMuted}" TextTrimming="CharacterEllipsis"/>
-                                    </StackPanel>
+                <!-- Right: Culprit Diagnosis & Rapid Growth Alert -->
+                <Border Grid.Column="2" Style="{DynamicResource CardBorder}">
+                    <StackPanel>
+                        <TextBlock Text="PRIMARY EXPANSION CULPRIT" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,12"/>
 
-                                    <!-- Proportional Bar -->
-                                    <Grid Grid.Column="2" VerticalAlignment="Center" Margin="16,0">
-                                        <ProgressBar Value="{Binding PercentageOfUsed}" Maximum="100" Height="7" BorderThickness="0" Background="{StaticResource BgInput}" Foreground="{Binding ColorHex, Converter={StaticResource CategoryColorConverter}}"/>
-                                    </Grid>
+                        <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="4" Padding="14" Margin="0,0,0,12">
+                            <StackPanel>
+                                <TextBlock Text="LARGEST EXPANDING DIRECTORY" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                                <TextBlock Text="{Binding TopCulpritDirectory}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource AccentOrange}" Margin="0,4,0,0" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding TopCulpritGrowthRate}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
 
-                                    <!-- Size Text -->
-                                    <TextBlock Grid.Column="3" Text="{Binding FormattedSize}" FontWeight="Bold" FontSize="12.5" Foreground="{StaticResource TextPrimary}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-
-                                    <!-- Percentage -->
-                                    <TextBlock Grid.Column="4" Text="{Binding FormattedPercentage}" FontSize="11" Foreground="{StaticResource TextMuted}" HorizontalAlignment="Right" VerticalAlignment="Center" FontWeight="Bold"/>
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Border>
+                        <TextBlock Text="RECOMMENDED ACTION" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,8"/>
+                        <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="4" Padding="12">
+                            <StackPanel>
+                                <TextBlock Text="{Binding RecommendedActionSummary}" FontSize="11.5" Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" LineHeight="16"/>
+                                <Button Content="EXPLORE RECURRING CACHES →" Command="{Binding InvestigateGrowthCommand}" Style="{DynamicResource SecondaryButton}" HorizontalAlignment="Left" Margin="0,10,0,0" Padding="10,5" FontSize="10"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

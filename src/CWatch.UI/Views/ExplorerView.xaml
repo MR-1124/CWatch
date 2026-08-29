@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d" 
              d:DesignHeight="800" d:DesignWidth="980">
-    <Grid Margin="32,24,32,32">
+    <Grid Margin="28,20,28,28">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -13,15 +13,15 @@
         </Grid.RowDefinitions>
 
         <!-- Header Row -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
+        <Grid Grid.Row="0" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="260"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel>
-                <TextBlock Text="Storage Explorer" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Variable Display, Aptos Display, Segoe UI, sans-serif"/>
-                <TextBlock Text="Hierarchical breakdown of directories, package stores, build caches, and system allocations" FontSize="12.5" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
+                <TextBlock Text="Storage Explorer" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontFamily="Segoe UI Variable Display, Segoe UI, sans-serif"/>
+                <TextBlock Text="Hierarchical breakdown of directories, package stores, build caches, and system allocations" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
             </StackPanel>
 
             <!-- Search Filter Box -->
@@ -29,7 +29,7 @@
         </Grid>
 
         <!-- Breadcrumb & Navigation Bar -->
-        <Border Grid.Row="1" Style="{StaticResource CardBorder}" Padding="10,6" Margin="0,0,0,14">
+        <Border Grid.Row="1" Style="{DynamicResource CardBorder}" Padding="8,5" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -38,8 +38,8 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Back / Up Button -->
-                <Button Grid.Column="0" Command="{Binding NavigateUpCommand}" Style="{StaticResource SecondaryButton}" Padding="10,5" Margin="0,0,10,0" ToolTip="Navigate up to parent directory">
-                    <TextBlock Text="⬆ PARENT" FontSize="10.5" FontWeight="Bold"/>
+                <Button Grid.Column="0" Command="{Binding NavigateUpCommand}" Style="{DynamicResource SecondaryButton}" Padding="8,4" Margin="0,0,8,0" ToolTip="Navigate up to parent directory">
+                    <TextBlock Text="▲ UP" FontSize="10" FontWeight="Bold"/>
                 </Button>
 
                 <!-- Breadcrumbs -->
@@ -53,8 +53,8 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="{Binding Name}" Command="{Binding DataContext.NavigateToItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{StaticResource AccentOrange}" BorderThickness="0" Cursor="Hand" FontWeight="Bold" FontSize="12.5" Padding="4,2"/>
-                                    <TextBlock Text="/" Foreground="{StaticResource TextMuted}" Margin="3,0" VerticalAlignment="Center" FontSize="13" FontWeight="Bold"/>
+                                    <Button Content="{Binding Name}" Command="{Binding DataContext.NavigateToItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{DynamicResource AccentOrange}" BorderThickness="0" Cursor="Hand" FontWeight="Bold" FontSize="12" Padding="4,2"/>
+                                    <TextBlock Text="/" Foreground="{DynamicResource TextMuted}" Margin="2,0" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
                                 </StackPanel>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -62,24 +62,24 @@
                 </ScrollViewer>
 
                 <!-- Item Count Label -->
-                <Border Grid.Column="2" Background="{StaticResource BgCardSecondary}" CornerRadius="3" Padding="8,3" BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1">
-                    <TextBlock Text="{Binding DisplayedItems.Count, StringFormat='{}{0} ITEMS'}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center"/>
+                <Border Grid.Column="2" Background="{DynamicResource BgCardNested}" CornerRadius="3" Padding="8,3" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
+                    <TextBlock Text="{Binding DisplayedItems.Count, StringFormat='{}{0} ITEMS'}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
                 </Border>
             </Grid>
         </Border>
 
         <!-- Items Table -->
-        <Border Grid.Row="2" Style="{StaticResource CardBorder}" Padding="0">
+        <Border Grid.Row="2" Style="{DynamicResource CardBorder}" Padding="0">
             <ListView ItemsSource="{Binding DisplayedItems}" Background="Transparent" BorderThickness="0" SelectionMode="Single">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
                         <EventSetter Event="MouseDoubleClick" Handler="OnItemDoubleClick"/>
                         <Setter Property="ContextMenu">
                             <Setter.Value>
-                                <ContextMenu Background="{StaticResource BgCard}" BorderBrush="{StaticResource BorderLight}">
-                                    <MenuItem Header="📂 Open in File Explorer" Command="{Binding DataContext.ShowInExplorerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{StaticResource TextPrimary}"/>
-                                    <MenuItem Header="📋 Copy Full Path" Command="{Binding DataContext.CopyPathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{StaticResource TextPrimary}"/>
-                                    <MenuItem Header="ℹ Show File Properties" Command="{Binding DataContext.ShowPropertiesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{StaticResource TextPrimary}"/>
+                                <ContextMenu Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderLight}">
+                                    <MenuItem Header="Open in File Explorer" Command="{Binding DataContext.ShowInExplorerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
+                                    <MenuItem Header="Copy Full Path" Command="{Binding DataContext.CopyPathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
+                                    <MenuItem Header="Show File Properties" Command="{Binding DataContext.ShowPropertiesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
                                 </ContextMenu>
                             </Setter.Value>
                         </Setter>
@@ -87,41 +87,56 @@
                 </ListView.ItemContainerStyle>
                 <ListView.View>
                     <GridView>
-                        <!-- Name & Icon -->
+                        <!-- Name & Type -->
                         <GridViewColumn Header="NAME" Width="400">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding IsDirectory, Converter={StaticResource CategoryColorConverter}, ConverterParameter='icon'}" Margin="0,0,8,0" FontSize="13" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="12.5"/>
+                                        <Border Width="16" Height="16" CornerRadius="2" Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" Margin="0,0,8,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding IsDirectory, Converter={StaticResource CategoryColorConverter}, ConverterParameter='type'}" FontSize="8.5" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource AccentOrange}"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="12"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <!-- Formatted Size -->
+                        <!-- Size -->
                         <GridViewColumn Header="ALLOCATED SIZE" Width="140">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding DisplaySize}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" FontSize="12.5"/>
+                                    <TextBlock Text="{Binding DisplaySize}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <!-- Item Count (Folders) -->
-                        <GridViewColumn Header="CONTAINS" Width="110">
+                        <!-- Proportion of Parent Meter -->
+                        <GridViewColumn Header="PROPORTION" Width="200">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding FileCount, StringFormat='{}{0:N0} files'}" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" FontSize="11"/>
+                                    <Grid Width="170" VerticalAlignment="Center">
+                                        <ProgressBar Value="{Binding RelativePercentage, Mode=OneWay}" Maximum="100" Height="6" Background="{DynamicResource BgInput}" Foreground="{DynamicResource AccentOrange}" BorderThickness="0"/>
+                                    </Grid>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
 
-                        <!-- Last Modified Date -->
-                        <GridViewColumn Header="LAST MODIFIED" Width="170">
+                        <!-- Category -->
+                        <GridViewColumn Header="CATEGORY" Width="150">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding LastModifiedUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" FontSize="11"/>
+                                    <Border CornerRadius="3" Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" Padding="6,2" HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding Category}" FontSize="9.5" FontWeight="Bold" Foreground="{Binding Category, Converter={StaticResource CategoryColorConverter}}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+
+                        <!-- Sub-Items / Count -->
+                        <GridViewColumn Header="ITEMS" Width="100">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding FileCount, StringFormat='{}{0:N0} files'}" FontSize="10.5" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
