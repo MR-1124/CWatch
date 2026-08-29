@@ -1,6 +1,7 @@
 using CWatch.Core.Enums;
 using CWatch.Core.Interfaces;
 using CWatch.Core.Models;
+using CWatch.Core.Safety;
 using CWatch.Infrastructure.WindowsApi;
 
 namespace CWatch.Cleanup.Providers;
@@ -133,7 +134,7 @@ public sealed class BrowserCacheCleanupProvider : ICleanupProvider
 
     private void AddIfValid(List<CleanupCandidate> list, string title, string path, string desc)
     {
-        if (Directory.Exists(path))
+        if (Directory.Exists(path) && PathSafetyValidator.IsSafeForCleanup(path))
         {
             long size = CalculateDirectorySize(path);
             if (size > 10 * 1024 * 1024) // > 10 MB
@@ -165,15 +166,29 @@ public sealed class BrowserCacheCleanupProvider : ICleanupProvider
             var result = new CleanupResult();
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
+            var enumOptions = new EnumerationOptions
+            {
+                AttributesToSkip = FileAttributes.ReparsePoint,
+                IgnoreInaccessible = true,
+                RecurseSubdirectories = true
+            };
+
             foreach (var cand in candidates)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                if (!PathSafetyValidator.IsSafeForCleanup(cand.Path))
+                {
+                    result.ErrorMessages.Add($"Security guard blocked unsafe deletion path: {cand.Path}");
+                    continue;
+                }
+
                 progress?.Report($"Cleaning {cand.Title}...");
 
                 if (Directory.Exists(cand.Path))
                 {
                     var di = new DirectoryInfo(cand.Path);
-                    foreach (var file in di.EnumerateFiles("*", SearchOption.AllDirectories))
+                    foreach (var file in di.EnumerateFiles("*", enumOptions))
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         try

@@ -1,6 +1,7 @@
 using CWatch.Core.Enums;
 using CWatch.Core.Interfaces;
 using CWatch.Core.Models;
+using CWatch.Core.Safety;
 using CWatch.Infrastructure.WindowsApi;
 
 namespace CWatch.Cleanup.Providers;
@@ -20,7 +21,7 @@ public sealed class WindowsTempCleanupProvider : ICleanupProvider
 
             // 1. User Temp
             string userTemp = Path.GetTempPath();
-            if (Directory.Exists(userTemp))
+            if (Directory.Exists(userTemp) && PathSafetyValidator.IsSafeForCleanup(userTemp))
             {
                 long size = CalculateDirectorySize(userTemp);
                 if (size > 0)
@@ -43,7 +44,7 @@ public sealed class WindowsTempCleanupProvider : ICleanupProvider
 
             // 2. Windows Temp
             string winTemp = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp");
-            if (Directory.Exists(winTemp))
+            if (Directory.Exists(winTemp) && PathSafetyValidator.IsSafeForCleanup(winTemp))
             {
                 long size = CalculateDirectorySize(winTemp);
                 if (size > 0)
@@ -79,15 +80,31 @@ public sealed class WindowsTempCleanupProvider : ICleanupProvider
             var result = new CleanupResult();
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
+            var enumOptions = new EnumerationOptions
+            {
+                AttributesToSkip = FileAttributes.ReparsePoint,
+                IgnoreInaccessible = true,
+                RecurseSubdirectories = true
+            };
+
             foreach (var cand in candidates)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                if (!PathSafetyValidator.IsSafeForCleanup(cand.Path))
+                {
+                    result.ErrorMessages.Add($"Security guard blocked unsafe deletion path: {cand.Path}");
+                    continue;
+                }
+
                 progress?.Report($"Cleaning {cand.Title}...");
 
                 if (Directory.Exists(cand.Path))
                 {
                     var di = new DirectoryInfo(cand.Path);
-                    foreach (var file in di.EnumerateFiles("*", SearchOption.AllDirectories))
+
+                    // Safely enumerate files skipping symlinks/junctions
+                    foreach (var file in di.EnumerateFiles("*", enumOptions))
                     {
                         cancellationToken.ThrowIfCancellationRequested();
                         try
@@ -104,11 +121,29 @@ public sealed class WindowsTempCleanupProvider : ICleanupProvider
                         }
                     }
 
-                    // Try removing empty subfolders
-                    foreach (var sub in di.EnumerateDirectories("*", SearchOption.AllDirectories))
+                    // Try removing empty subfolders without traversing junction points
+                    try
                     {
-                        try { sub.Delete(true); } catch { }
+                        var dirEnumOptions = new EnumerationOptions
+                        {
+                            AttributesToSkip = FileAttributes.ReparsePoint,
+                            IgnoreInaccessible = true,
+                            RecurseSubdirectories = false
+                        };
+
+                        foreach (var sub in di.EnumerateDirectories("*", dirEnumOptions))
+                        {
+                            try
+                            {
+                                if ((sub.Attributes & FileAttributes.ReparsePoint) == 0)
+                                {
+                                    sub.Delete(true);
+                                }
+                            }
+                            catch { }
+                        }
                     }
+                    catch { }
                 }
             }
 

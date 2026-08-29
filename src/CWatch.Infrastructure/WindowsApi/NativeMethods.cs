@@ -34,6 +34,83 @@ public static class NativeMethods
 
     public const uint SHOP_FILEPATH = 0x00000002;
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct SHFILEOPSTRUCT
+    {
+        public IntPtr hwnd;
+        public uint wFunc;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string pFrom;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string? pTo;
+        public ushort fFlags;
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool fAnyOperationsAborted;
+        public IntPtr hNameMappings;
+        [MarshalAs(UnmanagedType.LPWStr)]
+        public string? lpszProgressTitle;
+    }
+
+    public const uint FO_DELETE = 0x0003;
+    public const ushort FOF_ALLOWUNDO = 0x0040;
+    public const ushort FOF_NOCONFIRMATION = 0x0010;
+    public const ushort FOF_NOERRORUI = 0x0400;
+    public const ushort FOF_SILENT = 0x0004;
+
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
+    public static extern int SHFileOperation([In, Out] ref SHFILEOPSTRUCT lpFileOp);
+
+    /// <summary>
+    /// Safely moves a file or directory to the Windows Recycle Bin so the user can restore it if necessary.
+    /// Falls back to permanent deletion if Recycle Bin is unavailable.
+    /// </summary>
+    public static bool SendToRecycleBin(string path)
+    {
+        try
+        {
+            if (!File.Exists(path) && !Directory.Exists(path)) return false;
+
+            // SHFileOperation expects double null-terminated string
+            string doubleNullTerminated = path + '\0' + '\0';
+
+            var op = new SHFILEOPSTRUCT
+            {
+                hwnd = IntPtr.Zero,
+                wFunc = FO_DELETE,
+                pFrom = doubleNullTerminated,
+                pTo = null,
+                fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT,
+                fAnyOperationsAborted = false,
+                hNameMappings = IntPtr.Zero,
+                lpszProgressTitle = null
+            };
+
+            int result = SHFileOperation(ref op);
+            if (result == 0 && !op.fAnyOperationsAborted)
+            {
+                return true;
+            }
+
+            // Fallback
+            if (File.Exists(path)) File.Delete(path);
+            else if (Directory.Exists(path)) Directory.Delete(path, true);
+            return true;
+        }
+        catch
+        {
+            try
+            {
+                if (File.Exists(path)) File.Delete(path);
+                else if (Directory.Exists(path)) Directory.Delete(path, true);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
+
     // Restart Manager APIs for identifying locked files
     [StructLayout(LayoutKind.Sequential)]
     public struct RM_UNIQUE_PROCESS

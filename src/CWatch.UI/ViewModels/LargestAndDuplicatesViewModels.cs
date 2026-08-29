@@ -345,10 +345,13 @@ public sealed class DuplicatesViewModel : ViewModelBase
                     if (File.Exists(file.FullPath))
                     {
                         long size = file.StorageItem.SizeBytes;
-                        File.Delete(file.FullPath);
-                        grp.Files.Remove(file);
-                        freedBytes += size;
-                        deletedCount++;
+                        bool deleted = NativeMethods.SendToRecycleBin(file.FullPath);
+                        if (deleted)
+                        {
+                            grp.Files.Remove(file);
+                            freedBytes += size;
+                            deletedCount++;
+                        }
                     }
                 }
                 catch { }

@@ -184,12 +184,21 @@ public partial class MainWindow : Window
 
                 if (stream != null)
                 {
+                    string canonicalInstallDir = Path.GetFullPath(_installDir).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+
                     using (stream)
                     using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
                     {
                         foreach (var entry in archive.Entries)
                         {
                             string destinationPath = Path.GetFullPath(Path.Combine(_installDir, entry.FullName));
+
+                            // Zip-Slip Traversal Guard
+                            if (!destinationPath.StartsWith(canonicalInstallDir, StringComparison.OrdinalIgnoreCase))
+                            {
+                                throw new InvalidOperationException($"Zip entry '{entry.FullName}' attempts directory traversal outside installation folder.");
+                            }
+
                             if (string.IsNullOrEmpty(entry.Name))
                             {
                                 // Directory entry

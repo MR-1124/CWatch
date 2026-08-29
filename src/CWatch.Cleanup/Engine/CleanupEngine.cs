@@ -1,6 +1,7 @@
 using CWatch.Cleanup.Providers;
 using CWatch.Core.Interfaces;
 using CWatch.Core.Models;
+using CWatch.Core.Safety;
 
 namespace CWatch.Cleanup.Engine;
 
@@ -46,7 +47,8 @@ public sealed class CleanupEngine : ICleanupEngine
             try
             {
                 var candidates = await provider.ScanCandidatesAsync(cancellationToken);
-                allCandidates.AddRange(candidates);
+                // Filter out any candidates failing safety validation defensively
+                allCandidates.AddRange(candidates.Where(c => c.ProviderId == "recycle_bin" || PathSafetyValidator.IsSafeForCleanup(c.Path)));
             }
             catch (Exception ex)
             {
@@ -66,7 +68,23 @@ public sealed class CleanupEngine : ICleanupEngine
         var combinedResult = new CleanupResult();
         var sw = System.Diagnostics.Stopwatch.StartNew();
 
-        var groupedByProvider = selectedCandidates
+        // Defense-in-depth: Validate all selected candidates before delegating
+        var safeCandidates = new List<CleanupCandidate>();
+        foreach (var cand in selectedCandidates)
+        {
+            if (cand.ProviderId == "recycle_bin" || PathSafetyValidator.IsSafeForCleanup(cand.Path))
+            {
+                safeCandidates.Add(cand);
+            }
+            else
+            {
+                _logger?.LogError($"Blocked unsafe cleanup candidate targeting: {cand.Path}");
+                combinedResult.ErrorMessages.Add($"Blocked unsafe target path: {cand.Path}");
+                combinedResult.FailedItemsCount++;
+            }
+        }
+
+        var groupedByProvider = safeCandidates
             .GroupBy(c => c.ProviderId)
             .ToDictionary(g => g.Key, g => g.ToList());
 
