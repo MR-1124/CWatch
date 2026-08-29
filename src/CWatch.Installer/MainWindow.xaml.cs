@@ -172,27 +172,54 @@ public partial class MainWindow : Window
                 // 3. Extract or copy payload binaries
                 Dispatcher.Invoke(() => TxtInstallStatus.Text = "Extracting application binaries...");
                 var assembly = Assembly.GetExecutingAssembly();
-                using (var stream = assembly.GetManifestResourceStream("CWatch.Installer.payload.zip"))
+                Stream? stream = assembly.GetManifestResourceStream("CWatch.Installer.payload.zip");
+                if (stream == null)
                 {
-                    if (stream != null)
+                    var resName = assembly.GetManifestResourceNames().FirstOrDefault(n => n.EndsWith("payload.zip", StringComparison.OrdinalIgnoreCase));
+                    if (resName != null)
                     {
-                        using var archive = new ZipArchive(stream);
-                        archive.ExtractToDirectory(_installDir, overwriteFiles: true);
+                        stream = assembly.GetManifestResourceStream(resName);
                     }
-                    else
-                    {
-                        // Fallback: Copy files from current directory / app subfolder
-                        string sourceDir = AppDomain.CurrentDomain.BaseDirectory;
-                        string appSub = Path.Combine(sourceDir, "app");
-                        string copyFrom = Directory.Exists(appSub) ? appSub : sourceDir;
+                }
 
-                        foreach (var file in Directory.GetFiles(copyFrom))
+                if (stream != null)
+                {
+                    using (stream)
+                    using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
+                    {
+                        foreach (var entry in archive.Entries)
                         {
-                            string fileName = Path.GetFileName(file);
-                            if (fileName.Equals("Setup.exe", StringComparison.OrdinalIgnoreCase)) continue;
-                            string destFile = Path.Combine(_installDir, fileName);
-                            File.Copy(file, destFile, overwrite: true);
+                            string destinationPath = Path.GetFullPath(Path.Combine(_installDir, entry.FullName));
+                            if (string.IsNullOrEmpty(entry.Name))
+                            {
+                                // Directory entry
+                                Directory.CreateDirectory(destinationPath);
+                            }
+                            else
+                            {
+                                string? dir = Path.GetDirectoryName(destinationPath);
+                                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                                {
+                                    Directory.CreateDirectory(dir);
+                                }
+                                entry.ExtractToFile(destinationPath, overwrite: true);
+                            }
                         }
+                    }
+                }
+                else
+                {
+                    // Fallback: Copy files from current directory / app subfolder
+                    string sourceDir = AppDomain.CurrentDomain.BaseDirectory;
+                    string appSub = Path.Combine(sourceDir, "app");
+                    string copyFrom = Directory.Exists(appSub) ? appSub : sourceDir;
+
+                    foreach (var file in Directory.GetFiles(copyFrom))
+                    {
+                        string fileName = Path.GetFileName(file);
+                        if (fileName.Equals("Setup.exe", StringComparison.OrdinalIgnoreCase)) continue;
+                        string destFile = Path.Combine(_installDir, fileName);
+                        File.Copy(file, destFile, overwrite: true);
                     }
                 }
 

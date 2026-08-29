@@ -10,6 +10,13 @@
     <RootNamespace>CWatch.Installer</RootNamespace>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <AssemblyName>Setup</AssemblyName>
+
+    <!-- True Single-File Self-Contained Executable -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
 
   <ItemGroup>
