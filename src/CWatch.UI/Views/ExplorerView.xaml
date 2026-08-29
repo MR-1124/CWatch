@@ -118,7 +118,7 @@
 
                 <ListView ItemsSource="{Binding DisplayedItems}" SelectedItem="{Binding SelectedItem}" Background="Transparent" BorderThickness="0" SelectionMode="Single">
                     <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
+                        <Style TargetType="ListViewItem">
                             <EventSetter Event="MouseDoubleClick" Handler="OnItemDoubleClick"/>
                             <Setter Property="ContextMenu">
                                 <Setter.Value>

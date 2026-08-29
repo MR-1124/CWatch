@@ -20,6 +20,8 @@ public partial class App : Application
 {
     private FileLoggerService? _logger;
 
+    private DateTime _lastErrorMessageTime = DateTime.MinValue;
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
@@ -32,7 +34,13 @@ public partial class App : Application
         {
             _logger.LogError("Unhandled UI Dispatcher Exception", args.Exception);
             args.Handled = true;
-            MessageBox.Show($"An unexpected error occurred:\n{args.Exception.Message}", "C:Watch Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            
+            // Debounce popup to avoid cascading dialogue loops
+            if ((DateTime.UtcNow - _lastErrorMessageTime).TotalSeconds > 3)
+            {
+                _lastErrorMessageTime = DateTime.UtcNow;
+                MessageBox.Show($"An unexpected error occurred:\n{args.Exception.Message}", "C:Watch Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         };
 
         AppDomain.CurrentDomain.UnhandledException += (s, args) =>

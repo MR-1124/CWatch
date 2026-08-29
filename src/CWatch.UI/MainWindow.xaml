@@ -144,7 +144,7 @@
 
                         <!-- Active Quick Scan Button -->
                         <Border Margin="0,18,0,0" Padding="0">
-                            <Button Style="{DynamicResource ModernButton}" Command="{Binding StartScanCommand}" IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolToVisibility}}" Padding="12,8" HorizontalAlignment="Stretch">
+                            <Button Style="{DynamicResource ModernButton}" Command="{Binding StartScanCommand}" IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBooleanConverter}}" Padding="12,8" HorizontalAlignment="Stretch">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                                     <TextBlock Text="⚡ " FontSize="11" Foreground="White"/>
                                     <TextBlock Text="RUN FULL SCAN" FontWeight="Bold" FontSize="11"/>

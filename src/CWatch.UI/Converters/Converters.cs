@@ -160,6 +160,21 @@ public sealed class HealthScoreToTextConverter : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
 }
 
+public sealed class InverseBooleanConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool b) return !b;
+        return true;
+    }
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is bool b) return !b;
+        return false;
+    }
+}
+
 public sealed class InverseBoolToVisibilityConverter : IValueConverter
 {
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
@@ -167,6 +182,10 @@ public sealed class InverseBoolToVisibilityConverter : IValueConverter
         if (value is bool b)
         {
             return b ? Visibility.Collapsed : Visibility.Visible;
+        }
+        if (value is int count)
+        {
+            return count > 0 ? Visibility.Collapsed : Visibility.Visible;
         }
         return Visibility.Visible;
     }
