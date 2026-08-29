@@ -10,7 +10,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="28,20,28,32">
                 <!-- Header Row -->
-                <Grid Margin="0,0,0,16">
+                <Grid Margin="0,0,0,14">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -27,36 +27,76 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Selection & Total Summary Banner -->
-                <Border Style="{DynamicResource HeroCardBorder}" Margin="0,0,0,14" Padding="14,10">
+                <!-- Post-Cleanup Celebration State Banner -->
+                <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource AccentGreen}" BorderThickness="1" CornerRadius="4" Padding="14,10" Margin="0,0,0,12" Visibility="{Binding HasCompletedCleanup, Converter={StaticResource BoolToVisibility}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-
-                        <!-- Selection Controls -->
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="SELECT SAFE ONLY" Command="{Binding SelectAllSafeCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="8,4" FontSize="10"/>
-                            <Button Content="DESELECT ALL" Command="{Binding DeselectAllCommand}" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="✨ SPACE RECLAIMED SUCCESSFULLY: " FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}"/>
+                                <TextBlock Text="{Binding LastResult.FormattedBytesCleaned}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                            </StackPanel>
+                            <TextBlock Text="{Binding LastResult.FormattedTotalOperations, StringFormat='{}{0} operations completed without errors.'}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                         </StackPanel>
+                        <Button Grid.Column="1" Content="✕ DISMISS" Command="{Binding DismissCelebrationCommand}" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="9.5"/>
+                    </Grid>
+                </Border>
 
-                        <!-- Total Space Selected -->
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="SELECTED TO RECLAIM: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding FormattedTotalSelected, Mode=OneWay}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                <!-- Selection & Total Summary Banner with Safety Filter Toolbar -->
+                <Border Style="{DynamicResource HeroCardBorder}" Margin="0,0,0,12" Padding="14,10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Top row: Selection presets & total -->
+                        <Grid Grid.Row="0" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Content="SELECT SAFE ONLY" Command="{Binding SelectAllSafeCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="8,4" FontSize="10"/>
+                                <Button Content="DESELECT ALL" Command="{Binding DeselectAllCommand}" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <TextBlock Text="SELECTED TO RECLAIM: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding FormattedTotalSelected, Mode=OneWay}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Bottom row: Safety Level Filter Chips -->
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="SAFETY LEVEL: " FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <Button Content="ALL CANDIDATES" Command="{Binding SetSafetyFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9" Margin="0,0,4,0"/>
+                            <Button Content="100% SAFE ONLY" Command="{Binding SetSafetyFilterCommand}" CommandParameter="SafeOnly" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9" Margin="0,0,4,0"/>
+                            <Button Content="CAUTION REQUIRED" Command="{Binding SetSafetyFilterCommand}" CommandParameter="ReviewOnly" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9" Margin="0,0,4,0"/>
+                            <Button Content="DEV / BUILD CACHES" Command="{Binding SetSafetyFilterCommand}" CommandParameter="DevOnly" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9"/>
                         </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- Status message -->
-                <TextBlock Text="{Binding StatusMessage}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,12"/>
+                <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,10"/>
+
+                <!-- Empty State -->
+                <Border Background="Transparent" Visibility="{Binding Candidates.Count, Converter={StaticResource InverseBoolToVisibility}}" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="30">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="No cleanup candidates match current filters." FontSize="12" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
 
                 <!-- Cleanup Candidates List -->
                 <ItemsControl ItemsSource="{Binding Candidates}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,10" Padding="14">
+                            <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,8" Padding="12">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -90,7 +130,7 @@
                                     </Grid>
 
                                     <!-- Detailed Explanations -->
-                                    <Border Grid.Row="1" Background="{DynamicResource BgCardNested}" CornerRadius="3" Padding="12,8" Margin="28,10,0,8" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
+                                    <Border Grid.Row="1" Background="{DynamicResource BgCardNested}" CornerRadius="3" Padding="12,8" Margin="28,8,0,8" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
                                         <Grid>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto"/>
@@ -117,8 +157,7 @@
 
                                     <!-- Candidate Action Buttons -->
                                     <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="28,0,0,0">
-                                        <Button Content="OPEN IN EXPLORER" Command="{Binding DataContext.OpenFolderCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="8,3" FontSize="9.5" Margin="0,0,6,0"/>
-                                        <Button Content="PROCESS LOCK CHECK" Command="{Binding DataContext.CheckProcessesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="8,3" FontSize="9.5"/>
+                                        <Button Content="OPEN IN EXPLORER" Command="{Binding DataContext.OpenPathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="8,3" FontSize="9.5"/>
                                     </StackPanel>
                                 </Grid>
                             </Border>
@@ -129,7 +168,7 @@
         </ScrollViewer>
 
         <!-- Dry Run & Execution Modal Overlay -->
-        <Border Background="#BF05070A" Visibility="{Binding IsConfirmModalOpen, Converter={StaticResource BoolToVisibility}}">
+        <Border Background="#CC05070A" Visibility="{Binding ShowConfirmationModal, Converter={StaticResource BoolToVisibility}}">
             <Border Style="{DynamicResource HeroCardBorder}" Width="560" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24">
                 <StackPanel>
                     <TextBlock Text="Confirm Safe Space Reclaim" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,0,0,6"/>
@@ -138,34 +177,14 @@
                     <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="12" Margin="0,0,0,16">
                         <StackPanel>
                             <TextBlock Text="{Binding FormattedTotalSelected, StringFormat='Total Target Payload: {0}'}" FontWeight="Bold" FontSize="13" Foreground="{DynamicResource AccentGreen}"/>
-                            <TextBlock Text="{Binding DryRunResults.Count, StringFormat='Target Locations: {0}'}" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0"/>
+                            <TextBlock Text="Items selected for safe cleanup." FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </Border>
 
-                    <!-- Dry Run Results List -->
-                    <ScrollViewer MaxHeight="160" VerticalScrollBarVisibility="Auto" Margin="0,0,0,18">
-                        <ItemsControl ItemsSource="{Binding DryRunResults}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="2" Padding="8,4" Margin="0,0,0,4">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
-                                            <TextBlock Grid.Column="1" Text="{Binding FormattedBytes}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}"/>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-
                     <!-- Modal Actions -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button Content="CANCEL" Command="{Binding CancelCleanupCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,8,0" Padding="14,6" FontSize="11"/>
-                        <Button Content="⚡ PROCEED WITH CLEANUP" Command="{Binding ExecuteCleanSelectedCommand}" Style="{DynamicResource SuccessButton}" Padding="16,6" FontSize="11"/>
+                        <Button Content="CANCEL" Command="{Binding CancelConfirmationCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,8,0" Padding="14,6" FontSize="11"/>
+                        <Button Content="⚡ PROCEED WITH CLEANUP" Command="{Binding ConfirmCleanCommand}" Style="{DynamicResource SuccessButton}" Padding="16,6" FontSize="11"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

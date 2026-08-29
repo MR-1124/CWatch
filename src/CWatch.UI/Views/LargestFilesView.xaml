@@ -14,10 +14,10 @@
         </Grid.RowDefinitions>
 
         <!-- Header Row -->
-        <Grid Grid.Row="0" Margin="0,0,0,14">
+        <Grid Grid.Row="0" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="260"/>
+                <ColumnDefinition Width="300"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel>
@@ -25,82 +25,115 @@
                 <TextBlock Text="Top individual space-consuming files across your drive ranked by byte weight" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
             </StackPanel>
 
-            <!-- Search Filter Box -->
-            <TextBox Grid.Column="1" Text="{Binding SearchFilter, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" ToolTip="Filter by filename or extension"/>
+            <!-- Search Filter Box with Clear Button -->
+            <Grid Grid.Column="1" VerticalAlignment="Center">
+                <TextBox Text="{Binding SearchFilter, UpdateSourceTrigger=PropertyChanged}" Padding="10,6,28,6" ToolTip="Filter by filename or extension..."/>
+                <Button Content="✕" Command="{Binding ClearSearchCommand}" HorizontalAlignment="Right" VerticalAlignment="Center" Background="Transparent" Foreground="{DynamicResource TextMuted}" BorderThickness="0" Cursor="Hand" Margin="0,0,6,0" Padding="4" FontSize="10" Visibility="{Binding SearchFilter, Converter={StaticResource StringToVisibility}}"/>
+            </Grid>
         </Grid>
 
-        <!-- Filter Chips Bar -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-            <TextBlock Text="FILTER TYPE:" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <Button Content="ALL FILES" Command="{Binding SetTypeFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10.5" Margin="0,0,6,0"/>
-            <Button Content="VIDEOS &amp; MEDIA" Command="{Binding SetTypeFilterCommand}" CommandParameter="Media" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10.5" Margin="0,0,6,0"/>
-            <Button Content="ARCHIVES &amp; ISOS" Command="{Binding SetTypeFilterCommand}" CommandParameter="Archives" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10.5" Margin="0,0,6,0"/>
-            <Button Content="VIRTUAL DISKS" Command="{Binding SetTypeFilterCommand}" CommandParameter="VirtualDisks" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10.5" Margin="0,0,6,0"/>
-            <Button Content="EXECUTABLES" Command="{Binding SetTypeFilterCommand}" CommandParameter="Executables" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10.5"/>
-        </StackPanel>
+        <!-- Filter Chips Toolbar -->
+        <Border Grid.Row="1" Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="8,4" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Type Filters -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="TYPE: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <Button Content="ALL" Command="{Binding SetTypeFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
+                    <Button Content="VIDEOS / MEDIA" Command="{Binding SetTypeFilterCommand}" CommandParameter="Media" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
+                    <Button Content="ARCHIVES &amp; ISOS" Command="{Binding SetTypeFilterCommand}" CommandParameter="Archives" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
+                    <Button Content="VIRTUAL DISKS" Command="{Binding SetTypeFilterCommand}" CommandParameter="VirtualDisks" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
+                    <Button Content="EXECUTABLES" Command="{Binding SetTypeFilterCommand}" CommandParameter="Executables" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5"/>
+                </StackPanel>
+
+                <!-- Min Size Filters -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="MIN SIZE: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="8,0,6,0"/>
+                    <Button Content="ALL" Command="{Binding SetMinSizeFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
+                    <Button Content="> 10 GB" Command="{Binding SetMinSizeFilterCommand}" CommandParameter=">10GB" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
+                    <Button Content="> 1 GB" Command="{Binding SetMinSizeFilterCommand}" CommandParameter=">1GB" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
+                    <Button Content="> 500 MB" Command="{Binding SetMinSizeFilterCommand}" CommandParameter=">500MB" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5"/>
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <!-- Largest Files Table -->
-        <Border Grid.Row="2" Style="{DynamicResource CardBorder}" Padding="0" Margin="0,0,0,12">
-            <ListView ItemsSource="{Binding DisplayedFiles}" SelectedItem="{Binding SelectedFile}" Background="Transparent" BorderThickness="0">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
-                        <Setter Property="ContextMenu">
-                            <Setter.Value>
-                                <ContextMenu Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderLight}">
-                                    <MenuItem Header="Open File" Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
-                                    <MenuItem Header="Open Enclosing Folder" Command="{Binding DataContext.ShowInExplorerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
-                                    <MenuItem Header="Copy Full Path" Command="{Binding DataContext.CopyPathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
-                                    <MenuItem Header="Show Properties" Command="{Binding DataContext.ShowPropertiesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
-                                </ContextMenu>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.View>
-                    <GridView>
-                        <!-- File Name -->
-                        <GridViewColumn Header="FILE NAME" Width="300">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource AccentOrange}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="12"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
+        <Border Grid.Row="2" Style="{DynamicResource CardBorder}" Padding="0" Margin="0,0,0,10">
+            <Grid>
+                <!-- Empty State -->
+                <Border Background="Transparent" Visibility="{Binding DisplayedFiles.Count, Converter={StaticResource InverseBoolToVisibility}}" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="30">
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="No large files found matching current filter thresholds." FontSize="12" Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
 
-                        <!-- Size Tier -->
-                        <GridViewColumn Header="FILE SIZE" Width="130">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding DisplaySize}" FontWeight="Bold" Foreground="{Binding SizeBytes, Converter={StaticResource FileSizeTierColorConverter}}" VerticalAlignment="Center" FontSize="11.5"/>
-                                    </Border>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
+                <ListView ItemsSource="{Binding DisplayedFiles}" SelectedItem="{Binding SelectedFile}" Background="Transparent" BorderThickness="0">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
+                            <Setter Property="ContextMenu">
+                                <Setter.Value>
+                                    <ContextMenu Background="{DynamicResource BgCard}" BorderBrush="{DynamicResource BorderLight}">
+                                        <MenuItem Header="Open File" Command="{Binding DataContext.OpenFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
+                                        <MenuItem Header="Open Enclosing Folder" Command="{Binding DataContext.ShowInExplorerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
+                                        <MenuItem Header="Copy Full Path" Command="{Binding DataContext.CopyPathCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
+                                        <MenuItem Header="Show Properties" Command="{Binding DataContext.ShowPropertiesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource TextPrimary}"/>
+                                        <Separator Background="{DynamicResource BorderSubtle}"/>
+                                        <MenuItem Header="Move to Recycle Bin" Command="{Binding DataContext.DeleteSelectedFileCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Foreground="{DynamicResource AccentRed}"/>
+                                    </ContextMenu>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.View>
+                        <GridView>
+                            <!-- File Name -->
+                            <GridViewColumn Header="FILE NAME" Width="320">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource AccentOrange}" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="12"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
 
-                        <!-- Path -->
-                        <GridViewColumn Header="FULL PATH" Width="440">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding FullPath}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="11" FontFamily="Consolas, Cascadia Code, monospace"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
+                            <!-- Size Tier -->
+                            <GridViewColumn Header="FILE SIZE" Width="130">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding DisplaySize}" FontWeight="Bold" Foreground="{Binding SizeBytes, Converter={StaticResource FileSizeTierColorConverter}}" VerticalAlignment="Center" FontSize="11.5"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
 
-                        <!-- Last Modified -->
-                        <GridViewColumn Header="MODIFIED" Width="150">
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding LastModifiedUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" FontSize="10.5"/>
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
+                            <!-- Path -->
+                            <GridViewColumn Header="FULL PATH" Width="420">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding FullPath}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" FontSize="11" FontFamily="Consolas, Cascadia Code, monospace"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <!-- Last Modified -->
+                            <GridViewColumn Header="MODIFIED" Width="150">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding LastModifiedUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" FontSize="10.5"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
         </Border>
 
         <!-- Selected File Action Inspector Footer -->
@@ -115,8 +148,10 @@
                     <TextBlock Text="{Binding SelectedFile.FullPath}" FontSize="11" Foreground="{DynamicResource TextMuted}" Margin="0,2,0,0" FontFamily="Consolas, Cascadia Code, monospace"/>
                 </StackPanel>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="OPEN IN EXPLORER" Command="{Binding ShowInExplorerCommand}" CommandParameter="{Binding SelectedFile}" Style="{DynamicResource SecondaryButton}" Margin="0,0,8,0" Padding="10,5" FontSize="10"/>
-                    <Button Content="COPY PATH" Command="{Binding CopyPathCommand}" CommandParameter="{Binding SelectedFile}" Style="{DynamicResource SecondaryButton}" Padding="10,5" FontSize="10"/>
+                    <Button Content="OPEN FILE" Command="{Binding OpenFileCommand}" CommandParameter="{Binding SelectedFile}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="8,4" FontSize="10"/>
+                    <Button Content="OPEN FOLDER" Command="{Binding ShowInExplorerCommand}" CommandParameter="{Binding SelectedFile}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="8,4" FontSize="10"/>
+                    <Button Content="COPY PATH" Command="{Binding CopyPathCommand}" CommandParameter="{Binding SelectedFile}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="8,4" FontSize="10"/>
+                    <Button Content="🗑 RECYCLE BIN" Command="{Binding DeleteSelectedFileCommand}" CommandParameter="{Binding SelectedFile}" Style="{DynamicResource DangerButton}" Padding="8,4" FontSize="10"/>
                 </StackPanel>
             </Grid>
         </Border>

@@ -16,9 +16,11 @@ public sealed class CleanupViewModel : ViewModelBase
     private bool _isCleaning;
     private bool _showConfirmationModal;
     private string _statusMessage = "Ready to analyze safe cleanup opportunities.";
+    private string _safetyFilter = "All"; // All, SafeOnly, ReviewOnly, DevOnly
     private long _totalSelectedBytes;
     private string _currentCleaningProgress = string.Empty;
     private CleanupResult? _lastResult;
+    private List<CleanupCandidate> _allCandidates = [];
 
     public bool IsScanning
     {
@@ -44,6 +46,18 @@ public sealed class CleanupViewModel : ViewModelBase
         set => SetProperty(ref _statusMessage, value);
     }
 
+    public string SafetyFilter
+    {
+        get => _safetyFilter;
+        set
+        {
+            if (SetProperty(ref _safetyFilter, value))
+            {
+                ApplyFilter();
+            }
+        }
+    }
+
     public long TotalSelectedBytes
     {
         get => _totalSelectedBytes;
@@ -65,8 +79,16 @@ public sealed class CleanupViewModel : ViewModelBase
     public CleanupResult? LastResult
     {
         get => _lastResult;
-        set => SetProperty(ref _lastResult, value);
+        set
+        {
+            if (SetProperty(ref _lastResult, value))
+            {
+                OnPropertyChanged(nameof(HasCompletedCleanup));
+            }
+        }
     }
+
+    public bool HasCompletedCleanup => LastResult != null && LastResult.BytesCleaned > 0;
 
     public ObservableCollection<CleanupCandidate> Candidates { get; } = [];
 
@@ -77,6 +99,8 @@ public sealed class CleanupViewModel : ViewModelBase
     public ICommand SelectAllSafeCommand { get; }
     public ICommand DeselectAllCommand { get; }
     public ICommand OpenPathCommand { get; }
+    public ICommand SetSafetyFilterCommand { get; }
+    public ICommand DismissCelebrationCommand { get; }
 
     public CleanupViewModel(
         ICleanupEngine cleanupEngine,
@@ -89,16 +113,22 @@ public sealed class CleanupViewModel : ViewModelBase
         RequestCleanSelectedCommand = new RelayCommand(OpenConfirmationModal, () => Candidates.Any(c => c.IsSelected) && !IsCleaning);
         ConfirmCleanCommand = new AsyncRelayCommand(ExecuteSelectedCleanupAsync, () => !IsCleaning);
         CancelConfirmationCommand = new RelayCommand(() => ShowConfirmationModal = false);
+        DismissCelebrationCommand = new RelayCommand(() => LastResult = null);
+
+        SetSafetyFilterCommand = new RelayCommand(param =>
+        {
+            if (param is string filter) SafetyFilter = filter;
+        });
 
         SelectAllSafeCommand = new RelayCommand(() =>
         {
-            foreach (var c in Candidates) c.IsSelected = c.Safety == SafetyLevel.Safe;
+            foreach (var c in _allCandidates) c.IsSelected = c.Safety == SafetyLevel.Safe;
             RecalculateTotal();
         });
 
         DeselectAllCommand = new RelayCommand(() =>
         {
-            foreach (var c in Candidates) c.IsSelected = false;
+            foreach (var c in _allCandidates) c.IsSelected = false;
             RecalculateTotal();
         });
 
@@ -112,20 +142,19 @@ public sealed class CleanupViewModel : ViewModelBase
     {
         IsScanning = true;
         StatusMessage = "Analyzing system temp, caches, and developer environments...";
+        _allCandidates.Clear();
         Candidates.Clear();
-        LastResult = null;
 
         try
         {
             var results = await _cleanupEngine.ScanAllRecommendationsAsync();
-            foreach (var item in results)
-            {
-                Candidates.Add(item);
-            }
+            _allCandidates = results;
 
+            ApplyFilter();
             RecalculateTotal();
-            StatusMessage = Candidates.Count > 0
-                ? $"Found {Candidates.Count} cleanup candidates. Total removable: {ByteSizeFormatter.Format(Candidates.Sum(c => c.SizeBytes))}."
+
+            StatusMessage = _allCandidates.Count > 0
+                ? $"Found {_allCandidates.Count} cleanup candidates. Total removable: {ByteSizeFormatter.Format(_allCandidates.Sum(c => c.SizeBytes))}."
                 : "No disposable junk found. Drive is clean!";
         }
         catch (Exception ex)
@@ -138,9 +167,34 @@ public sealed class CleanupViewModel : ViewModelBase
         }
     }
 
+    private void ApplyFilter()
+    {
+        Candidates.Clear();
+        var list = _allCandidates.AsEnumerable();
+
+        if (SafetyFilter == "SafeOnly")
+        {
+            list = list.Where(c => c.Safety == SafetyLevel.Safe);
+        }
+        else if (SafetyFilter == "ReviewOnly")
+        {
+            list = list.Where(c => c.Safety == SafetyLevel.Review || c.Safety == SafetyLevel.LowRisk);
+        }
+        else if (SafetyFilter == "DevOnly")
+        {
+            list = list.Where(c => c.Category == StorageCategoryType.DevelopmentTools ||
+                                   c.Category == StorageCategoryType.VirtualMachinesEmulators);
+        }
+
+        foreach (var item in list)
+        {
+            Candidates.Add(item);
+        }
+    }
+
     public void RecalculateTotal()
     {
-        TotalSelectedBytes = Candidates.Where(c => c.IsSelected).Sum(c => c.SizeBytes);
+        TotalSelectedBytes = _allCandidates.Where(c => c.IsSelected).Sum(c => c.SizeBytes);
         OnPropertyChanged(nameof(FormattedTotalSelected));
     }
 
@@ -159,7 +213,7 @@ public sealed class CleanupViewModel : ViewModelBase
         IsCleaning = true;
         StatusMessage = "Performing safe cleanup...";
 
-        var selected = Candidates.Where(c => c.IsSelected).ToList();
+        var selected = _allCandidates.Where(c => c.IsSelected).ToList();
         var progress = new Progress<string>(msg => CurrentCleaningProgress = msg);
 
         try
@@ -167,7 +221,7 @@ public sealed class CleanupViewModel : ViewModelBase
             var result = await _cleanupEngine.ExecuteCleanupAsync(selected, progress);
             LastResult = result;
 
-            StatusMessage = $"Successfully freed {result.FormattedBytesCleaned} disk space!";
+            StatusMessage = $"Successfully freed {result.FormattedBytesCleaned} disk space across {result.ItemsCleanedCount} location(s)!";
 
             // Refresh candidate list after cleaning
             await ScanForRecommendationsAsync();

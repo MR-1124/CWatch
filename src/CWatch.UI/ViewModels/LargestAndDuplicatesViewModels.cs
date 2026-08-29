@@ -13,8 +13,11 @@ public sealed class LargestFilesViewModel : ViewModelBase
     private bool _isLoading;
     private string _searchFilter = string.Empty;
     private string _selectedTypeFilter = "All";
+    private string _selectedMinSize = "All"; // All, >10GB, >1GB, >500MB, >100MB
+    private string _sortBy = "SizeDesc"; // SizeDesc, DateDesc, NameAsc
     private List<StorageItem> _allLargestFiles = [];
     private StorageItem? _selectedFile;
+    private string _statusMessage = "Index loaded.";
 
     public bool IsLoading
     {
@@ -46,10 +49,40 @@ public sealed class LargestFilesViewModel : ViewModelBase
         }
     }
 
+    public string SelectedMinSize
+    {
+        get => _selectedMinSize;
+        set
+        {
+            if (SetProperty(ref _selectedMinSize, value))
+            {
+                ApplyFilter();
+            }
+        }
+    }
+
+    public string SortBy
+    {
+        get => _sortBy;
+        set
+        {
+            if (SetProperty(ref _sortBy, value))
+            {
+                ApplyFilter();
+            }
+        }
+    }
+
     public StorageItem? SelectedFile
     {
         get => _selectedFile;
         set => SetProperty(ref _selectedFile, value);
+    }
+
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        set => SetProperty(ref _statusMessage, value);
     }
 
     public ObservableCollection<StorageItem> DisplayedFiles { get; } = [];
@@ -58,7 +91,11 @@ public sealed class LargestFilesViewModel : ViewModelBase
     public ICommand ShowInExplorerCommand { get; }
     public ICommand CopyPathCommand { get; }
     public ICommand ShowPropertiesCommand { get; }
+    public ICommand DeleteSelectedFileCommand { get; }
     public ICommand SetTypeFilterCommand { get; }
+    public ICommand SetMinSizeFilterCommand { get; }
+    public ICommand SetSortCommand { get; }
+    public ICommand ClearSearchCommand { get; }
 
     public LargestFilesViewModel(IFileSystemScanner scanner)
     {
@@ -88,10 +125,38 @@ public sealed class LargestFilesViewModel : ViewModelBase
             if (item != null) NativeMethods.ShowFileProperties(item.FullPath);
         });
 
+        DeleteSelectedFileCommand = new RelayCommand(param =>
+        {
+            var item = param as StorageItem ?? SelectedFile;
+            if (item != null && File.Exists(item.FullPath))
+            {
+                bool deleted = NativeMethods.SendToRecycleBin(item.FullPath);
+                if (deleted)
+                {
+                    _allLargestFiles.Remove(item);
+                    DisplayedFiles.Remove(item);
+                    StatusMessage = $"Moved '{item.Name}' ({item.DisplaySize}) to Recycle Bin.";
+                    SelectedFile = DisplayedFiles.FirstOrDefault();
+                }
+            }
+        });
+
         SetTypeFilterCommand = new RelayCommand(param =>
         {
             if (param is string filter) SelectedTypeFilter = filter;
         });
+
+        SetMinSizeFilterCommand = new RelayCommand(param =>
+        {
+            if (param is string size) SelectedMinSize = size;
+        });
+
+        SetSortCommand = new RelayCommand(param =>
+        {
+            if (param is string sort) SortBy = sort;
+        });
+
+        ClearSearchCommand = new RelayCommand(() => SearchFilter = string.Empty);
     }
 
     public void SetLargestFiles(List<StorageItem> files)
@@ -124,10 +189,32 @@ public sealed class LargestFilesViewModel : ViewModelBase
             };
         }
 
-        foreach (var file in files.OrderByDescending(f => f.SizeBytes))
+        if (SelectedMinSize != "All")
+        {
+            long minBytes = SelectedMinSize switch
+            {
+                ">10GB" => 10L * 1024 * 1024 * 1024,
+                ">1GB" => 1L * 1024 * 1024 * 1024,
+                ">500MB" => 500L * 1024 * 1024,
+                ">100MB" => 100L * 1024 * 1024,
+                _ => 0
+            };
+            files = files.Where(f => f.SizeBytes >= minBytes);
+        }
+
+        files = SortBy switch
+        {
+            "DateDesc" => files.OrderByDescending(f => f.LastModifiedUtc ?? DateTime.MinValue),
+            "NameAsc" => files.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase),
+            _ => files.OrderByDescending(f => f.SizeBytes)
+        };
+
+        foreach (var file in files)
         {
             DisplayedFiles.Add(file);
         }
+
+        StatusMessage = $"Tracking {DisplayedFiles.Count} largest files ({ByteSizeFormatter.Format(DisplayedFiles.Sum(f => f.SizeBytes))} total).";
 
         if (SelectedFile == null || !DisplayedFiles.Contains(SelectedFile))
         {
@@ -152,7 +239,17 @@ public sealed class DuplicateGroupItem : ViewModelBase
 {
     public long FileSizeBytes { get; set; }
     public string FormattedSize { get => ByteSizeFormatter.Format(FileSizeBytes); set { } }
+    public string Extension { get; set; } = string.Empty;
     public ObservableCollection<DuplicateFileEntry> Files { get; } = [];
+
+    public long TotalWastedInGroup => Math.Max(0, (Files.Count(f => f.IsSelectedForDeletion)) * FileSizeBytes);
+    public string FormattedWastedInGroup => ByteSizeFormatter.Format(TotalWastedInGroup);
+
+    public void NotifyWastedChanged()
+    {
+        OnPropertyChanged(nameof(FormattedWastedInGroup));
+        OnPropertyChanged(nameof(TotalWastedInGroup));
+    }
 }
 
 public sealed class DuplicateFileEntry : ViewModelBase
@@ -177,6 +274,8 @@ public sealed class DuplicatesViewModel : ViewModelBase
     private readonly IFileSystemScanner _scanner;
     private bool _isScanning;
     private string _statusMessage = "Click 'Scan Duplicates' to discover identical files across user folders.";
+    private string _currentPhase = string.Empty;
+    private string _scanTarget = "UserProfile"; // UserProfile, Downloads, Documents
     private long _totalWastedBytes;
 
     public bool IsScanning
@@ -189,6 +288,18 @@ public sealed class DuplicatesViewModel : ViewModelBase
     {
         get => _statusMessage;
         set => SetProperty(ref _statusMessage, value);
+    }
+
+    public string CurrentPhase
+    {
+        get => _currentPhase;
+        set => SetProperty(ref _currentPhase, value);
+    }
+
+    public string ScanTarget
+    {
+        get => _scanTarget;
+        set => SetProperty(ref _scanTarget, value);
     }
 
     public long TotalWastedBytes
@@ -208,6 +319,7 @@ public sealed class DuplicatesViewModel : ViewModelBase
     public ICommand KeepOldestCopiesCommand { get; }
     public ICommand SelectAllDuplicatesCommand { get; }
     public ICommand DeselectAllDuplicatesCommand { get; }
+    public ICommand SetScanTargetCommand { get; }
 
     public DuplicatesViewModel(IFileSystemScanner scanner)
     {
@@ -218,6 +330,11 @@ public sealed class DuplicatesViewModel : ViewModelBase
         ShowInExplorerCommand = new RelayCommand(param =>
         {
             if (param is DuplicateFileEntry entry) NativeMethods.OpenInExplorer(entry.FullPath);
+        });
+
+        SetScanTargetCommand = new RelayCommand(param =>
+        {
+            if (param is string target) ScanTarget = target;
         });
 
         KeepNewestCopiesCommand = new RelayCommand(() =>
@@ -279,6 +396,7 @@ public sealed class DuplicatesViewModel : ViewModelBase
             {
                 wasted += file.StorageItem.SizeBytes;
             }
+            grp.NotifyWastedChanged();
         }
         TotalWastedBytes = wasted;
         OnPropertyChanged(nameof(FormattedWastedBytes));
@@ -287,6 +405,7 @@ public sealed class DuplicatesViewModel : ViewModelBase
     private async Task ScanDuplicatesAsync()
     {
         IsScanning = true;
+        CurrentPhase = "Initializing scan scope...";
         StatusMessage = "Analyzing file signatures and computing SHA-256 byte hashes...";
         DuplicateGroups.Clear();
         TotalWastedBytes = 0;
@@ -294,14 +413,29 @@ public sealed class DuplicatesViewModel : ViewModelBase
         try
         {
             string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var results = await _scanner.FindDuplicateFilesAsync(userProfile);
+            string scanPath = ScanTarget switch
+            {
+                "Downloads" => Path.Combine(userProfile, "Downloads"),
+                "Documents" => Path.Combine(userProfile, "Documents"),
+                _ => userProfile
+            };
+
+            if (!Directory.Exists(scanPath)) scanPath = userProfile;
+
+            CurrentPhase = $"Scanning: {scanPath}";
+            var results = await _scanner.FindDuplicateFilesAsync(scanPath);
 
             long wasted = 0;
             foreach (var group in results)
             {
                 if (group.Count < 2) continue;
 
-                var grp = new DuplicateGroupItem { FileSizeBytes = group[0].SizeBytes };
+                var grp = new DuplicateGroupItem
+                {
+                    FileSizeBytes = group[0].SizeBytes,
+                    Extension = group[0].Extension ?? string.Empty
+                };
+
                 bool first = true;
                 foreach (var item in group)
                 {
@@ -319,7 +453,7 @@ public sealed class DuplicatesViewModel : ViewModelBase
             TotalWastedBytes = wasted;
             StatusMessage = DuplicateGroups.Count > 0
                 ? $"Found {DuplicateGroups.Count} duplicate groups ({ByteSizeFormatter.Format(wasted)} reclaimable)."
-                : "No duplicate files found in scanned directories. Everything is clean!";
+                : "No duplicate files found in selected directory. Everything is clean!";
         }
         catch (Exception ex)
         {
@@ -328,6 +462,7 @@ public sealed class DuplicatesViewModel : ViewModelBase
         finally
         {
             IsScanning = false;
+            CurrentPhase = string.Empty;
         }
     }
 
@@ -364,6 +499,6 @@ public sealed class DuplicatesViewModel : ViewModelBase
         }
 
         TotalWastedBytes = Math.Max(0, TotalWastedBytes - freedBytes);
-        StatusMessage = $"Successfully deleted {deletedCount} duplicate file(s) and reclaimed {ByteSizeFormatter.Format(freedBytes)}.";
+        StatusMessage = $"Successfully moved {deletedCount} duplicate file(s) to Recycle Bin ({ByteSizeFormatter.Format(freedBytes)} recovered).";
     }
 }

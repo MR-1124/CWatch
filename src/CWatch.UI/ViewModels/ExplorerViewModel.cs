@@ -3,6 +3,7 @@ using System.Windows.Input;
 using CWatch.Core.Enums;
 using CWatch.Core.Interfaces;
 using CWatch.Core.Models;
+using CWatch.Core.Safety;
 using CWatch.Infrastructure.WindowsApi;
 
 namespace CWatch.UI.ViewModels;
@@ -12,9 +13,12 @@ public sealed class ExplorerViewModel : ViewModelBase
     private readonly IFileSystemScanner _scanner;
     private StorageItem? _rootItem;
     private StorageItem? _currentItem;
+    private StorageItem? _selectedItem;
     private string _searchFilter = string.Empty;
-    private StorageCategoryType? _categoryFilter;
+    private string _sortBy = "SizeDesc"; // SizeDesc, SizeAsc, NameAsc, ItemsDesc
+    private string _categoryFilter = "All";
     private bool _isLoading;
+    private string _statusInfo = string.Empty;
 
     public StorageItem? CurrentItem
     {
@@ -25,8 +29,15 @@ public sealed class ExplorerViewModel : ViewModelBase
             {
                 UpdateBreadcrumbs();
                 ApplyFilter();
+                UpdateStatusInfo();
             }
         }
+    }
+
+    public StorageItem? SelectedItem
+    {
+        get => _selectedItem;
+        set => SetProperty(ref _selectedItem, value);
     }
 
     public string SearchFilter
@@ -41,7 +52,19 @@ public sealed class ExplorerViewModel : ViewModelBase
         }
     }
 
-    public StorageCategoryType? CategoryFilter
+    public string SortBy
+    {
+        get => _sortBy;
+        set
+        {
+            if (SetProperty(ref _sortBy, value))
+            {
+                ApplyFilter();
+            }
+        }
+    }
+
+    public string CategoryFilter
     {
         get => _categoryFilter;
         set
@@ -59,6 +82,14 @@ public sealed class ExplorerViewModel : ViewModelBase
         set => SetProperty(ref _isLoading, value);
     }
 
+    public string StatusInfo
+    {
+        get => _statusInfo;
+        set => SetProperty(ref _statusInfo, value);
+    }
+
+    public bool IsCurrentPathCritical => CurrentItem != null && PathSafetyValidator.IsCriticalSystemPath(CurrentItem.FullPath);
+
     public ObservableCollection<StorageItem> DisplayedItems { get; } = [];
     public ObservableCollection<StorageItem> Breadcrumbs { get; } = [];
 
@@ -68,6 +99,9 @@ public sealed class ExplorerViewModel : ViewModelBase
     public ICommand ShowInExplorerCommand { get; }
     public ICommand CopyPathCommand { get; }
     public ICommand ShowPropertiesCommand { get; }
+    public ICommand SetSortCommand { get; }
+    public ICommand SetCategoryFilterCommand { get; }
+    public ICommand ClearSearchCommand { get; }
 
     public ExplorerViewModel(IFileSystemScanner scanner)
     {
@@ -91,35 +125,49 @@ public sealed class ExplorerViewModel : ViewModelBase
 
         OpenItemCommand = new RelayCommand(param =>
         {
-            if (param is StorageItem item)
+            var target = param as StorageItem ?? SelectedItem;
+            if (target != null)
             {
-                NativeMethods.OpenItem(item.FullPath);
+                if (target.IsDirectory)
+                {
+                    CurrentItem = target;
+                }
+                else
+                {
+                    NativeMethods.OpenItem(target.FullPath);
+                }
             }
         });
 
         ShowInExplorerCommand = new RelayCommand(param =>
         {
-            if (param is StorageItem item)
-            {
-                NativeMethods.OpenInExplorer(item.FullPath);
-            }
+            var target = param as StorageItem ?? SelectedItem;
+            if (target != null) NativeMethods.OpenInExplorer(target.FullPath);
         });
 
         CopyPathCommand = new RelayCommand(param =>
         {
-            if (param is StorageItem item)
-            {
-                System.Windows.Clipboard.SetText(item.FullPath);
-            }
+            var target = param as StorageItem ?? SelectedItem;
+            if (target != null) System.Windows.Clipboard.SetText(target.FullPath);
         });
 
         ShowPropertiesCommand = new RelayCommand(param =>
         {
-            if (param is StorageItem item)
-            {
-                NativeMethods.ShowFileProperties(item.FullPath);
-            }
+            var target = param as StorageItem ?? SelectedItem;
+            if (target != null) NativeMethods.ShowFileProperties(target.FullPath);
         });
+
+        SetSortCommand = new RelayCommand(param =>
+        {
+            if (param is string sort) SortBy = sort;
+        });
+
+        SetCategoryFilterCommand = new RelayCommand(param =>
+        {
+            if (param is string cat) CategoryFilter = cat;
+        });
+
+        ClearSearchCommand = new RelayCommand(() => SearchFilter = string.Empty);
     }
 
     public void SetRootItem(StorageItem root)
@@ -133,7 +181,6 @@ public sealed class ExplorerViewModel : ViewModelBase
         Breadcrumbs.Clear();
         if (CurrentItem == null) return;
 
-        // Build path from current up to root if parent links exist, or simple sequence
         var chain = new List<StorageItem>();
         var curr = CurrentItem;
         while (curr != null)
@@ -145,6 +192,7 @@ public sealed class ExplorerViewModel : ViewModelBase
 
         chain.Reverse();
         foreach (var item in chain) Breadcrumbs.Add(item);
+        OnPropertyChanged(nameof(IsCurrentPathCritical));
     }
 
     private static StorageItem? FindParentNode(StorageItem? root, StorageItem target)
@@ -159,6 +207,21 @@ public sealed class ExplorerViewModel : ViewModelBase
         return null;
     }
 
+    private void UpdateStatusInfo()
+    {
+        if (CurrentItem == null)
+        {
+            StatusInfo = "No directory loaded.";
+            return;
+        }
+
+        int folderCount = CurrentItem.Children.Count(c => c.IsDirectory);
+        int fileCount = CurrentItem.Children.Count(c => !c.IsDirectory);
+        long totalBytes = CurrentItem.SizeBytes;
+
+        StatusInfo = $"{folderCount} folders, {fileCount} files • Total Allocated: {ByteSizeFormatter.Format(totalBytes)}";
+    }
+
     private void ApplyFilter()
     {
         DisplayedItems.Clear();
@@ -169,17 +232,35 @@ public sealed class ExplorerViewModel : ViewModelBase
         if (!string.IsNullOrWhiteSpace(_searchFilter))
         {
             items = items.Where(i => i.Name.Contains(_searchFilter, StringComparison.OrdinalIgnoreCase) ||
-                                     i.FullPath.Contains(_searchFilter, StringComparison.OrdinalIgnoreCase));
+                                     i.FullPath.Contains(_searchFilter, StringComparison.OrdinalIgnoreCase) ||
+                                     (i.Extension != null && i.Extension.Contains(_searchFilter, StringComparison.OrdinalIgnoreCase)));
         }
 
-        if (_categoryFilter.HasValue)
+        if (CategoryFilter != "All")
         {
-            items = items.Where(i => i.Category == _categoryFilter.Value);
+            if (Enum.TryParse<StorageCategoryType>(CategoryFilter, true, out var catType))
+            {
+                items = items.Where(i => i.Category == catType);
+            }
         }
 
-        foreach (var item in items.OrderByDescending(i => i.SizeBytes))
+        items = SortBy switch
+        {
+            "SizeAsc" => items.OrderBy(i => i.SizeBytes),
+            "NameAsc" => items.OrderBy(i => i.Name, StringComparer.OrdinalIgnoreCase),
+            "NameDesc" => items.OrderByDescending(i => i.Name, StringComparer.OrdinalIgnoreCase),
+            "ItemsDesc" => items.OrderByDescending(i => i.FileCount),
+            _ => items.OrderByDescending(i => i.SizeBytes)
+        };
+
+        foreach (var item in items)
         {
             DisplayedItems.Add(item);
+        }
+
+        if (SelectedItem == null || !DisplayedItems.Contains(SelectedItem))
+        {
+            SelectedItem = DisplayedItems.FirstOrDefault();
         }
     }
 }

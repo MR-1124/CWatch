@@ -8,7 +8,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="28,20,28,32">
             <!-- Header Row -->
-            <Grid Margin="0,0,0,16">
+            <Grid Margin="0,0,0,14">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -19,7 +19,7 @@
                     <TextBlock Text="What Keeps Coming Back? Detect regenerating caches, runaway build folders &amp; background bloat" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
                 </StackPanel>
 
-                <Button Grid.Column="1" Content="RE-ANALYZE" Command="{Binding RefreshCommand}" Style="{DynamicResource SecondaryButton}" VerticalAlignment="Center" Padding="12,6" FontSize="11"/>
+                <Button Grid.Column="1" Content="🔄 RE-ANALYZE" Command="{Binding RefreshCommand}" Style="{DynamicResource SecondaryButton}" VerticalAlignment="Center" Padding="12,6" FontSize="11"/>
             </Grid>
 
             <!-- Overview Intelligence Banner -->
@@ -34,14 +34,22 @@
                 </Grid>
             </Border>
 
-            <!-- Status message if no alerts -->
-            <TextBlock Text="{Binding StatusMessage}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,12"/>
+            <!-- Status message -->
+            <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,0,0,12"/>
+
+            <!-- Empty State when no alerts -->
+            <Border Background="Transparent" Visibility="{Binding Alerts.Count, Converter={StaticResource InverseBoolToVisibility}}" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="30">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="No abnormal recurring cache regeneration detected." FontSize="13" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Your developer environments, package managers, and system temp folders are within normal operating bounds." FontSize="11.5" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
 
             <!-- Alerts List -->
             <ItemsControl ItemsSource="{Binding Alerts}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,12" Padding="16">
+                        <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,10" Padding="14">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -83,8 +91,9 @@
 
                                 <!-- Bottom Row: Actions -->
                                 <StackPanel Grid.Row="2" Orientation="Horizontal">
-                                    <Button Content="INSPECT DIRECTORY" Command="{Binding DataContext.InspectItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="10,4" FontSize="10" Margin="0,0,8,0"/>
-                                    <Button Content="DISMISS ALERT" Command="{Binding DataContext.IgnoreItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{DynamicResource TextMuted}" BorderThickness="0" Cursor="Hand" Padding="8,4" FontSize="10" FontWeight="Bold"/>
+                                    <Button Content="INSPECT DIRECTORY" Command="{Binding DataContext.InspectItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="10,4" FontSize="10" Margin="0,0,6,0"/>
+                                    <Button Content="📋 COPY MITIGATION COMMAND" Command="{Binding DataContext.CopyMitigationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="10,4" FontSize="10" Margin="0,0,6,0"/>
+                                    <Button Content="DISMISS" Command="{Binding DataContext.IgnoreItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Background="Transparent" Foreground="{DynamicResource TextMuted}" BorderThickness="0" Cursor="Hand" Padding="8,4" FontSize="10" FontWeight="Bold"/>
                                 </StackPanel>
                             </Grid>
                         </Border>

@@ -13,7 +13,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header Row -->
-        <Grid Grid.Row="0" Margin="0,0,0,14">
+        <Grid Grid.Row="0" Margin="0,0,0,12">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -24,10 +24,13 @@
                 <TextBlock Text="Multi-phase SHA-256 byte hash detection to safely identify identical redundant files" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
             </StackPanel>
 
-            <!-- Actions -->
+            <!-- Actions & Scan Scope -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="SCOPE: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <Button Content="USER PROFILE" Command="{Binding SetScanTargetCommand}" CommandParameter="UserProfile" Style="{DynamicResource SecondaryButton}" Padding="6,4" FontSize="9.5" Margin="0,0,4,0"/>
+                <Button Content="DOWNLOADS" Command="{Binding SetScanTargetCommand}" CommandParameter="Downloads" Style="{DynamicResource SecondaryButton}" Padding="6,4" FontSize="9.5" Margin="0,0,8,0"/>
                 <Button Content="⚡ SCAN DUPLICATES" Command="{Binding StartScanCommand}" Style="{DynamicResource ModernButton}" Margin="0,0,8,0" Padding="12,6" FontSize="11"/>
-                <Button Content="🗑 MOVE TO RECYCLE BIN" Command="{Binding DeleteSelectedDuplicatesCommand}" Style="{DynamicResource DangerButton}" Padding="12,6" FontSize="11"/>
+                <Button Content="🗑 DELETE TO RECYCLE BIN" Command="{Binding DeleteSelectedDuplicatesCommand}" Style="{DynamicResource DangerButton}" Padding="12,6" FontSize="11"/>
             </StackPanel>
         </Grid>
 
@@ -42,7 +45,7 @@
                 <!-- Left: Status & Reclaimable Metric -->
                 <StackPanel VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
-                        <TextBlock Text="RECLAIMABLE DUPLICATE SPACE: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                        <TextBlock Text="RECLAIMABLE REDUNDANT SPACE: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding FormattedWastedBytes}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                     </StackPanel>
                     <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
@@ -58,65 +61,79 @@
             </Grid>
         </Border>
 
-        <!-- Duplicate Groups List -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding DuplicateGroups}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,10" Padding="14">
-                            <StackPanel>
-                                <!-- Group Header -->
-                                <Grid Margin="0,0,0,8">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
+        <!-- Duplicate Groups List or Empty State -->
+        <Grid Grid.Row="2">
+            <Border Background="Transparent" Visibility="{Binding DuplicateGroups.Count, Converter={StaticResource InverseBoolToVisibility}}" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="30">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="No duplicate file groups loaded." FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Click 'SCAN DUPLICATES' to run a deep SHA-256 byte comparison across your documents and downloads." FontSize="11.5" Foreground="{DynamicResource TextMuted}" Margin="0,4,0,0" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
 
-                                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                        <Border Background="{DynamicResource AccentOrange}" CornerRadius="2" Padding="6,2" Margin="0,0,8,0">
-                                            <TextBlock Text="{Binding Files.Count, StringFormat='{}{0} IDENTICAL COPIES'}" FontSize="9" FontWeight="Bold" Foreground="White"/>
-                                        </Border>
-                                        <TextBlock Text="FILE WEIGHT: " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding FormattedSize, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontSize="11" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Grid>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding DuplicateGroups}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,10" Padding="14">
+                                <StackPanel>
+                                    <!-- Group Header -->
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                <!-- File Entries in Group -->
-                                <ItemsControl ItemsSource="{Binding Files}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="{DynamicResource BgCardNested}" CornerRadius="3" Padding="10,6" Margin="0,0,0,4" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
-
-                                                    <!-- Select Checkbox -->
-                                                    <CheckBox Grid.Column="0" IsChecked="{Binding IsSelectedForDeletion}" Margin="0,0,10,0" ToolTip="Select for deletion"/>
-
-                                                    <!-- File Path -->
-                                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                                        <TextBlock Text="{Binding FullPath}" Foreground="{DynamicResource TextPrimary}" FontSize="11" FontFamily="Consolas, Cascadia Code, monospace" TextTrimming="CharacterEllipsis"/>
-                                                    </StackPanel>
-
-                                                    <!-- Modified Date -->
-                                                    <TextBlock Grid.Column="2" Text="{Binding LastModifiedUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Foreground="{DynamicResource TextMuted}" FontSize="10.5" Margin="14,0" VerticalAlignment="Center"/>
-
-                                                    <!-- Actions -->
-                                                    <Button Grid.Column="3" Content="OPEN FOLDER" Command="{Binding DataContext.ShowInExplorerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="8,3" FontSize="9.5"/>
-                                                </Grid>
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Border Background="{DynamicResource AccentOrange}" CornerRadius="2" Padding="6,2" Margin="0,0,8,0">
+                                                <TextBlock Text="{Binding Files.Count, StringFormat='{}{0} IDENTICAL COPIES'}" FontSize="9" FontWeight="Bold" Foreground="White"/>
                                             </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+                                            <TextBlock Text="INDIVIDUAL SIZE: " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding FormattedSize, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontSize="11" VerticalAlignment="Center"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                            <TextBlock Text="REDUNDANT WEIGHT: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding FormattedWastedInGroup}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- File Entries in Group -->
+                                    <ItemsControl ItemsSource="{Binding Files}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{DynamicResource BgCardNested}" CornerRadius="3" Padding="10,6" Margin="0,0,0,4" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- Select Checkbox -->
+                                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsSelectedForDeletion}" Margin="0,0,10,0" ToolTip="Select for deletion"/>
+
+                                                        <!-- File Path -->
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding FullPath}" Foreground="{DynamicResource TextPrimary}" FontSize="11" FontFamily="Consolas, Cascadia Code, monospace" TextTrimming="CharacterEllipsis"/>
+                                                        </StackPanel>
+
+                                                        <!-- Modified Date -->
+                                                        <TextBlock Grid.Column="2" Text="{Binding LastModifiedUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}" Foreground="{DynamicResource TextMuted}" FontSize="10.5" Margin="14,0" VerticalAlignment="Center"/>
+
+                                                        <!-- Actions -->
+                                                        <Button Grid.Column="3" Content="OPEN FOLDER" Command="{Binding DataContext.ShowInExplorerCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" Style="{DynamicResource SecondaryButton}" Padding="8,3" FontSize="9.5"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </UserControl>

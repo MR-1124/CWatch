@@ -8,7 +8,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="28,20,28,32">
             <!-- Header Row with Time Range Selectors -->
-            <Grid Margin="0,0,0,16">
+            <Grid Margin="0,0,0,14">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -19,120 +19,166 @@
                     <TextBlock Text="Understand how your drive changes over time and identify what components grew" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,3,0,0"/>
                 </StackPanel>
 
-                <!-- Time Range Filter Buttons -->
+                <!-- Time Range & Snapshot Trigger -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="24 HOURS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="24h" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10" Margin="0,0,5,0"/>
-                    <Button Content="7 DAYS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="7d" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10" Margin="0,0,5,0"/>
-                    <Button Content="30 DAYS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="30d" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10" Margin="0,0,5,0"/>
-                    <Button Content="ALL TIME" Command="{Binding SelectTimeRangeCommand}" CommandParameter="90d" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10"/>
+                    <Button Content="📸 RECORD SNAPSHOT" Command="{Binding RecordSnapshotNowCommand}" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="10" Margin="0,0,8,0" ToolTip="Save an immediate storage snapshot to SQLite"/>
+                    <Button Content="24 HOURS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="24h" Style="{DynamicResource SecondaryButton}" Padding="6,4" FontSize="9.5" Margin="0,0,4,0"/>
+                    <Button Content="7 DAYS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="7d" Style="{DynamicResource SecondaryButton}" Padding="6,4" FontSize="9.5" Margin="0,0,4,0"/>
+                    <Button Content="30 DAYS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="30d" Style="{DynamicResource SecondaryButton}" Padding="6,4" FontSize="9.5" Margin="0,0,4,0"/>
+                    <Button Content="ALL TIME" Command="{Binding SelectTimeRangeCommand}" CommandParameter="90d" Style="{DynamicResource SecondaryButton}" Padding="6,4" FontSize="9.5"/>
                 </StackPanel>
             </Grid>
 
-            <!-- Burn Rate & Projected Status Card -->
-            <Border Style="{DynamicResource HeroCardBorder}" Margin="0,0,0,16">
+            <!-- Burn Rate & Projected Runout Status Card -->
+            <Border Style="{DynamicResource HeroCardBorder}" Margin="0,0,0,14" Padding="14,12">
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.2*"/>
+                        <ColumnDefinition Width="16"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel>
+                    <!-- Left: Growth Velocity & Burn Rate -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource AccentOrange}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="STORAGE BURN RATE: " FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Text="STORAGE GROWTH VELOCITY: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
                             <TextBlock Text="{Binding BurnRateSummary}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}"/>
                         </StackPanel>
                         <TextBlock Text="{Binding GrowthSummary}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
                     </StackPanel>
+
+                    <!-- Right: Runout Forecast -->
+                    <Border Grid.Column="2" Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="10,8">
+                        <StackPanel>
+                            <TextBlock Text="CAPACITY EXHAUSTION FORECAST" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Text="{Binding RunoutForecast}" FontWeight="Bold" FontSize="11.5" Foreground="{DynamicResource AccentGreen}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
                 </Grid>
             </Border>
 
-            <!-- What Grew Recently? Section -->
-            <TextBlock Text="DIFFERENTIAL GROWTH DELTAS (WHAT ACCUMULATED?)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+            <!-- Differential Growth Deltas Header & Filter Bar -->
+            <Grid Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <Border Style="{DynamicResource CardBorder}" Padding="0" Margin="0,0,0,20">
-                <ListView ItemsSource="{Binding GrowthDeltas}" Background="Transparent" BorderThickness="0">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="LOCATION / COMPONENT" Width="380">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding DisplayPath}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" FontSize="12"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                <TextBlock Text="DIFFERENTIAL GROWTH DELTAS (WHAT EXPANDED?)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
 
-                            <GridViewColumn Header="NET GROWTH DELTA" Width="170">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
-                                            <TextBlock Text="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}}" FontWeight="Bold" FontSize="11" Foreground="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}, ConverterParameter='fg'}"/>
-                                        </Border>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="FILTER: " FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <Button Content="ALL DELTAS" Command="{Binding SetDeltaFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9" Margin="0,0,4,0"/>
+                    <Button Content="GROWTH ONLY" Command="{Binding SetDeltaFilterCommand}" CommandParameter="GrowthOnly" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9" Margin="0,0,4,0"/>
+                    <Button Content="FREED ONLY" Command="{Binding SetDeltaFilterCommand}" CommandParameter="FreedOnly" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9"/>
+                </StackPanel>
+            </Grid>
 
-                            <GridViewColumn Header="CURRENT SIZE" Width="140">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding FormattedCurrentSize}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+            <!-- Growth Deltas Table -->
+            <Border Style="{DynamicResource CardBorder}" Padding="0" Margin="0,0,0,18">
+                <Grid>
+                    <Border Background="Transparent" Visibility="{Binding GrowthDeltas.Count, Converter={StaticResource InverseBoolToVisibility}}" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20">
+                        <TextBlock Text="No significant differential growth detected in the selected time range." FontSize="11" Foreground="{DynamicResource TextMuted}"/>
+                    </Border>
 
-                            <GridViewColumn Header="PREVIOUS SIZE" Width="140">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding FormattedPreviousSize}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" FontSize="10.5"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
+                    <ListView ItemsSource="{Binding GrowthDeltas}" Background="Transparent" BorderThickness="0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="LOCATION / COMPONENT" Width="380">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DisplayPath}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" FontSize="12"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="NET GROWTH DELTA" Width="170">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}}" FontWeight="Bold" FontSize="11" Foreground="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}, ConverterParameter='fg'}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="CURRENT SIZE" Width="140">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding FormattedCurrentSize}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="PREVIOUS SIZE" Width="140">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding FormattedPreviousSize}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" FontSize="10.5"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
             </Border>
 
             <!-- Snapshots History Table Section -->
             <TextBlock Text="RECORDED VOLUME SNAPSHOTS (SQLITE ARCHIVE)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
 
             <Border Style="{DynamicResource CardBorder}" Padding="0">
-                <ListView ItemsSource="{Binding Snapshots}" Background="Transparent" BorderThickness="0">
-                    <ListView.View>
-                        <GridView>
-                            <GridViewColumn Header="RECORDED UTC TIMESTAMP" Width="220">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding TimestampUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                <Grid>
+                    <Border Background="Transparent" Visibility="{Binding Snapshots.Count, Converter={StaticResource InverseBoolToVisibility}}" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20">
+                        <TextBlock Text="No storage snapshots saved yet. Snapshots will record automatically in the background." FontSize="11" Foreground="{DynamicResource TextMuted}"/>
+                    </Border>
 
-                            <GridViewColumn Header="USED SPACE" Width="140">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding UsedBytes, Converter={StaticResource SizeFormatter}}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                    <ListView ItemsSource="{Binding Snapshots}" SelectedItem="{Binding SelectedSnapshot}" Background="Transparent" BorderThickness="0">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="RECORDED UTC TIMESTAMP" Width="220">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding TimestampUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
 
-                            <GridViewColumn Header="FREE HEADROOM" Width="140">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding FreeBytes, Converter={StaticResource SizeFormatter}}" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center" FontSize="11.5"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
+                                <GridViewColumn Header="USED SPACE" Width="140">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding UsedBytes, Converter={StaticResource SizeFormatter}}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
 
-                            <GridViewColumn Header="UTILIZATION" Width="140">
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding UsedPercentage, StringFormat='{}{0:F1}%'}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" FontSize="11"/>
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
+                                <GridViewColumn Header="FREE HEADROOM" Width="140">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding FreeBytes, Converter={StaticResource SizeFormatter}}" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center" FontSize="11.5"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="UTILIZATION" Width="140">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding UsedPercentage, StringFormat='{}{0:F1}%'}" Foreground="{DynamicResource TextSecondary}" VerticalAlignment="Center" FontSize="11"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+
+                                <GridViewColumn Header="NOTES" Width="200">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Notes}" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" FontSize="10.5"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </Grid>
             </Border>
         </StackPanel>
     </ScrollViewer>

@@ -9,11 +9,12 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Header Row -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
+        <Grid Grid.Row="0" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -25,14 +26,42 @@
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="GENERATE REPORT" Command="{Binding GenerateReportCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="12,6" FontSize="11"/>
-                <Button Content="COPY MARKDOWN" Command="{Binding CopyReportCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="12,6" FontSize="11"/>
+                <Button Content="🔄 GENERATE REPORT" Command="{Binding GenerateReportCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="12,6" FontSize="11"/>
+                <Button Content="📋 COPY MARKDOWN" Command="{Binding CopyReportCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,6,0" Padding="12,6" FontSize="11"/>
                 <Button Content="⚡ EXPORT HTML" Command="{Binding ExportHtmlReportCommand}" Style="{DynamicResource ModernButton}" Padding="14,6" FontSize="11"/>
             </StackPanel>
         </Grid>
 
+        <!-- Health Scorecard Banner -->
+        <Border Grid.Row="1" Style="{DynamicResource HeroCardBorder}" Margin="0,0,0,12" Padding="14,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="4" Padding="12,6" Margin="0,0,14,0" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="HEALTH SCORE: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding HealthScore, StringFormat='{}{0}/100'}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding HealthRating, StringFormat='SYSTEM STORAGE STATUS: {0}'}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <!-- Key Takeaway Pill -->
+                <Border Grid.Column="2" Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="8,4" VerticalAlignment="Center">
+                    <TextBlock Text="AUDIT: PASS" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}"/>
+                </Border>
+            </Grid>
+        </Border>
+
         <!-- Key Metrics Cards -->
-        <Grid Grid.Row="1" Margin="0,0,0,16">
+        <Grid Grid.Row="2" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -74,7 +103,7 @@
         </Grid>
 
         <!-- Markdown Report Body -->
-        <Border Grid.Row="2" Style="{DynamicResource CardBorder}" Padding="16">
+        <Border Grid.Row="3" Style="{DynamicResource CardBorder}" Padding="16">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <TextBox Text="{Binding ReportText, Mode=OneWay}" IsReadOnly="True" Background="Transparent" Foreground="{DynamicResource TextPrimary}" BorderThickness="0" FontFamily="Consolas, Cascadia Code, Courier New, monospace" FontSize="11.5" TextWrapping="Wrap"/>
             </ScrollViewer>

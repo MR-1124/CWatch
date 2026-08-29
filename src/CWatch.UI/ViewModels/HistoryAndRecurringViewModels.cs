@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows.Input;
 using CWatch.Core.Interfaces;
 using CWatch.Core.Models;
@@ -15,7 +16,11 @@ public sealed class HistoryViewModel : ViewModelBase
     private string _selectedTimeRange = "7d";
     private string _growthSummary = "Select a timeframe to inspect storage changes.";
     private string _burnRateSummary = string.Empty;
+    private string _runoutForecast = string.Empty;
+    private string _deltaFilter = "All"; // All, GrowthOnly, FreedOnly
     private bool _isLoading;
+    private StorageSnapshot? _selectedSnapshot;
+    private List<GrowthDelta> _allDeltas = [];
 
     public string SelectedTimeRange
     {
@@ -41,17 +46,43 @@ public sealed class HistoryViewModel : ViewModelBase
         set => SetProperty(ref _burnRateSummary, value);
     }
 
+    public string RunoutForecast
+    {
+        get => _runoutForecast;
+        set => SetProperty(ref _runoutForecast, value);
+    }
+
+    public string DeltaFilter
+    {
+        get => _deltaFilter;
+        set
+        {
+            if (SetProperty(ref _deltaFilter, value))
+            {
+                ApplyDeltaFilter();
+            }
+        }
+    }
+
     public bool IsLoading
     {
         get => _isLoading;
         set => SetProperty(ref _isLoading, value);
     }
 
+    public StorageSnapshot? SelectedSnapshot
+    {
+        get => _selectedSnapshot;
+        set => SetProperty(ref _selectedSnapshot, value);
+    }
+
     public ObservableCollection<StorageSnapshot> Snapshots { get; } = [];
     public ObservableCollection<GrowthDelta> GrowthDeltas { get; } = [];
 
     public ICommand SelectTimeRangeCommand { get; }
+    public ICommand SetDeltaFilterCommand { get; }
     public ICommand RefreshCommand { get; }
+    public ICommand RecordSnapshotNowCommand { get; }
 
     public HistoryViewModel(
         ISnapshotRepository snapshotRepo,
@@ -67,7 +98,31 @@ public sealed class HistoryViewModel : ViewModelBase
             if (param is string range) SelectedTimeRange = range;
         });
 
+        SetDeltaFilterCommand = new RelayCommand(param =>
+        {
+            if (param is string filter) DeltaFilter = filter;
+        });
+
         RefreshCommand = new AsyncRelayCommand(LoadHistoryAsync);
+
+        RecordSnapshotNowCommand = new AsyncRelayCommand(async () =>
+        {
+            try
+            {
+                var drive = new DriveInfo("C:");
+                var snap = new StorageSnapshot
+                {
+                    DriveLetter = "C:",
+                    TotalBytes = drive.TotalSize,
+                    FreeBytes = drive.AvailableFreeSpace,
+                    TimestampUtc = DateTime.UtcNow,
+                    Notes = "Manual point-in-time snapshot"
+                };
+                await _snapshotRepo.SaveSnapshotAsync(snap);
+                await LoadHistoryAsync();
+            }
+            catch { }
+        });
     }
 
     public async Task LoadHistoryAsync()
@@ -95,34 +150,70 @@ public sealed class HistoryViewModel : ViewModelBase
             Snapshots.Clear();
             foreach (var s in list) Snapshots.Add(s);
 
-            GrowthDeltas.Clear();
+            if (SelectedSnapshot == null || !Snapshots.Contains(SelectedSnapshot))
+            {
+                SelectedSnapshot = Snapshots.LastOrDefault();
+            }
+
+            _allDeltas.Clear();
             if (list.Count >= 2)
             {
                 var oldest = list.First();
                 var newest = list.Last();
-                var deltas = await _growthAnalyzer.CompareSnapshotsAsync(oldest, newest);
+                _allDeltas = await _growthAnalyzer.CompareSnapshotsAsync(oldest, newest);
 
-                foreach (var d in deltas) GrowthDeltas.Add(d);
+                ApplyDeltaFilter();
 
                 long netUsed = newest.UsedBytes - oldest.UsedBytes;
                 GrowthSummary = netUsed >= 0
-                    ? $"C: drive gained {ByteSizeFormatter.Format(netUsed)} in this period."
-                    : $"C: drive freed {ByteSizeFormatter.Format(-netUsed)} in this period.";
+                    ? $"C: drive gained +{ByteSizeFormatter.Format(netUsed)} across this timeframe."
+                    : $"C: drive freed -{ByteSizeFormatter.Format(-netUsed)} across this timeframe.";
 
                 var (dailyRate, daysLeft) = _trendAnalyzer.CalculateExhaustionTrend(list, newest.FreeBytes);
-                BurnRateSummary = dailyRate > 0
-                    ? $"Estimated storage burn rate: +{ByteSizeFormatter.Format((long)dailyRate)}/day" + (daysLeft.HasValue ? $" (~{daysLeft.Value.TotalDays:F0} days until full)" : "")
-                    : "Storage growth rate is steady.";
+                if (dailyRate > 0)
+                {
+                    BurnRateSummary = $"+{ByteSizeFormatter.Format((long)dailyRate)} / day";
+                    RunoutForecast = daysLeft.HasValue && daysLeft.Value.TotalDays < 365
+                        ? $"~{daysLeft.Value.TotalDays:F0} days until capacity exhaustion"
+                        : "Capacity headroom is comfortable (> 1 year)";
+                }
+                else
+                {
+                    BurnRateSummary = "Steady / Deflating";
+                    RunoutForecast = "No immediate storage depletion risk detected";
+                }
             }
             else
             {
-                GrowthSummary = "Historical snapshots are accumulating. Check back as periodic snapshots are recorded.";
-                BurnRateSummary = "Recording background baseline metrics...";
+                ApplyDeltaFilter();
+                GrowthSummary = "Historical snapshots are accumulating. Check back as periodic background snapshots are recorded.";
+                BurnRateSummary = "Recording baseline...";
+                RunoutForecast = "Collecting telemetry...";
             }
         }
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    private void ApplyDeltaFilter()
+    {
+        GrowthDeltas.Clear();
+        var deltas = _allDeltas.AsEnumerable();
+
+        if (DeltaFilter == "GrowthOnly")
+        {
+            deltas = deltas.Where(d => d.DeltaBytes > 0);
+        }
+        else if (DeltaFilter == "FreedOnly")
+        {
+            deltas = deltas.Where(d => d.DeltaBytes < 0);
+        }
+
+        foreach (var d in deltas.OrderByDescending(d => Math.Abs(d.DeltaBytes)))
+        {
+            GrowthDeltas.Add(d);
         }
     }
 }
@@ -150,6 +241,7 @@ public sealed class RecurringViewModel : ViewModelBase
 
     public ICommand InspectItemCommand { get; }
     public ICommand IgnoreItemCommand { get; }
+    public ICommand CopyMitigationCommand { get; }
     public ICommand RefreshCommand { get; }
 
     public RecurringViewModel(
@@ -172,6 +264,20 @@ public sealed class RecurringViewModel : ViewModelBase
             if (param is RecurringGrowthAlert alert)
             {
                 Alerts.Remove(alert);
+                StatusMessage = $"Alert for '{alert.Path}' dismissed.";
+            }
+        });
+
+        CopyMitigationCommand = new RelayCommand(param =>
+        {
+            if (param is RecurringGrowthAlert alert)
+            {
+                string cmd = GetMitigationCommand(alert.Path);
+                if (!string.IsNullOrEmpty(cmd))
+                {
+                    System.Windows.Clipboard.SetText(cmd);
+                    StatusMessage = $"Copied mitigation command to clipboard: {cmd}";
+                }
             }
         });
 
@@ -191,12 +297,25 @@ public sealed class RecurringViewModel : ViewModelBase
             foreach (var a in detected) Alerts.Add(a);
 
             StatusMessage = Alerts.Count > 0
-                ? $"Detected {Alerts.Count} location(s) exhibiting repeating cache regeneration."
+                ? $"Detected {Alerts.Count} recurring bloat location(s) re-accumulating space."
                 : "No abnormal recurring storage leaks detected.";
         }
         finally
         {
             IsLoading = false;
         }
+    }
+
+    private static string GetMitigationCommand(string path)
+    {
+        string p = path.ToLowerInvariant();
+        if (p.Contains("npm") || p.Contains("node_modules")) return "npm cache clean --force";
+        if (p.Contains("pip") || p.Contains("wheels")) return "pip cache purge";
+        if (p.Contains("docker")) return "docker system prune -af --volumes";
+        if (p.Contains("nuget")) return "dotnet nuget locals all --clear";
+        if (p.Contains("cargo")) return "cargo cache --autoclean";
+        if (p.Contains("gradle")) return "gradle --stop";
+        if (p.Contains("temp")) return "del /q/f/s %TEMP%\\*";
+        return "cleanmgr /sagerun:1";
     }
 }
