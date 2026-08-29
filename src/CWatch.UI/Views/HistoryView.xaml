@@ -1,0 +1,146 @@
+<UserControl x:Class="CWatch.UI.Views.HistoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d" 
+             d:DesignHeight="800" d:DesignWidth="980">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,24,32,36">
+            <!-- Header Row with Time Range Selectors -->
+            <Grid Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock Text="Storage History &amp; Differential Growth" FontSize="22" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" FontFamily="Segoe UI Variable Display, Aptos Display, Segoe UI, sans-serif"/>
+                    <TextBlock Text="Understand how your drive changes over time and identify what components grew" FontSize="12.5" Foreground="{StaticResource TextSecondary}" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Time Range Filter Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="24 HOURS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="24h" Style="{StaticResource ChipButton}" Margin="0,0,5,0"/>
+                    <Button Content="7 DAYS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="7d" Style="{StaticResource ChipButton}" Margin="0,0,5,0"/>
+                    <Button Content="30 DAYS" Command="{Binding SelectTimeRangeCommand}" CommandParameter="30d" Style="{StaticResource ChipButton}" Margin="0,0,5,0"/>
+                    <Button Content="ALL TIME" Command="{Binding SelectTimeRangeCommand}" CommandParameter="90d" Style="{StaticResource ChipButton}"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Burn Rate & Projected Status Card -->
+            <Border Style="{StaticResource HeroCardBorder}" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="📈 STORAGE BURN RATE: " FontSize="12" FontWeight="Bold" Foreground="{StaticResource TextMuted}"/>
+                            <TextBlock Text="{Binding BurnRateSummary}" FontSize="13.5" FontWeight="Bold" Foreground="{StaticResource AccentOrange}"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding GrowthSummary}" FontSize="12" Foreground="{StaticResource TextSecondary}" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- What Grew Recently? Section -->
+            <TextBlock Text="DIFFERENTIAL GROWTH DELTAS (WHAT ACCUMULATED?)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,10"/>
+
+            <Border Style="{StaticResource CardBorder}" Padding="0" Margin="0,0,0,24">
+                <ListView ItemsSource="{Binding GrowthDeltas}" Background="Transparent" BorderThickness="0">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="LOCATION / COMPONENT" Width="380">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding DisplayPath}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" FontSize="12.5"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="NET GROWTH DELTA" Width="170">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}, ConverterParameter='bg'}" CornerRadius="3" Padding="6,2" HorizontalAlignment="Left">
+                                            <TextBlock Text="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}}" FontWeight="Bold" FontSize="11.5" Foreground="{Binding DeltaBytes, Converter={StaticResource DeltaFormatter}, ConverterParameter='fg'}"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="CURRENT SIZE" Width="140">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding FormattedCurrentSize}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" FontSize="12"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="PREVIOUS SIZE" Width="140">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding FormattedPreviousSize}" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" FontSize="11"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Border>
+
+            <!-- Snapshots History Table Section -->
+            <TextBlock Text="RECORDED VOLUME SNAPSHOTS (SQLITE ARCHIVE)" FontSize="11" FontWeight="Bold" Foreground="{StaticResource TextMuted}" Margin="0,0,0,10"/>
+
+            <Border Style="{StaticResource CardBorder}" Padding="0">
+                <ListView ItemsSource="{Binding Snapshots}" Background="Transparent" BorderThickness="0">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="TIMESTAMP (UTC)" Width="180">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding TimestampUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm:ss}'}" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" FontSize="11" FontFamily="Consolas, Segoe UI"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="FREE SPACE" Width="130">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding FormattedFree}" FontWeight="Bold" Foreground="{StaticResource AccentGreen}" VerticalAlignment="Center" FontSize="11.5"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="USED ALLOCATION" Width="140">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding FormattedUsed}" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" VerticalAlignment="Center" FontSize="11.5"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="TRIGGER REASON" Width="180">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding TriggerReason}" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" FontSize="11"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+
+                            <GridViewColumn Header="INDEXED ITEMS" Width="150">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding TotalFileCount, StringFormat='{}{0:N0} files'}" Foreground="{StaticResource TextSecondary}" VerticalAlignment="Center" FontSize="11"/>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

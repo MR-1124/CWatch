@@ -1,0 +1,301 @@
+using CWatch.Core.Enums;
+using CWatch.Core.Interfaces;
+using CWatch.Core.Models;
+
+namespace CWatch.Cleanup.Providers;
+
+public sealed class DevelopmentCacheCleanupProvider : ICleanupProvider
+{
+    public string ProviderId => "dev_caches";
+    public string DisplayName => "Developer Package & Build Caches";
+    public string CategoryName => "Development Tools";
+    public bool IsAdvanced => false;
+
+    public async Task<List<CleanupCandidate>> ScanCandidatesAsync(CancellationToken cancellationToken = default)
+    {
+        return await Task.Run(() =>
+        {
+            var candidates = new List<CleanupCandidate>();
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+            // npm cache
+            string npmCache = Path.Combine(localAppData, "npm-cache");
+            AddCandidate(candidates, "npm Cache", npmCache, "Downloaded Node.js packages cached globally.",
+                "npm keeps tarballs of downloaded packages.",
+                "Subsequent 'npm install' commands will download packages directly from registry.",
+                SafetyLevel.LowRisk);
+
+            // pip cache
+            string pipCache = Path.Combine(localAppData, "pip", "cache");
+            AddCandidate(candidates, "Python pip Cache", pipCache, "Cached Python wheels and source distributions.",
+                "pip stores downloaded Python packages for faster offline installs.",
+                "Future 'pip install' runs will download needed packages afresh.",
+                SafetyLevel.LowRisk);
+
+            // Gradle cache
+            string gradleCache = Path.Combine(userProfile, ".gradle", "caches");
+            AddCandidate(candidates, "Gradle Build & Dependency Cache", gradleCache, "Downloaded JVM dependencies and compilation build caches.",
+                "Gradle maintains downloaded libraries across Android/Java projects.",
+                "Future Gradle builds will re-download required project dependencies once.",
+                SafetyLevel.LowRisk);
+
+            // NuGet global cache
+            string nugetCache = Path.Combine(userProfile, ".nuget", "packages");
+            AddCandidate(candidates, "NuGet Global Packages Cache", nugetCache, ".NET package cache.",
+                "NuGet caches installed .NET library packages.",
+                "Visual Studio / dotnet restore will re-download project dependencies when built.",
+                SafetyLevel.LowRisk);
+
+            // Yarn cache
+            string yarnCache = Path.Combine(localAppData, "Yarn", "Cache");
+            AddCandidate(candidates, "Yarn Cache", yarnCache, "Cached Yarn package archives.",
+                "Yarn stores downloaded JS packages.",
+                "Yarn will fetch packages on next install.",
+                SafetyLevel.LowRisk);
+
+            // pnpm store
+            string pnpmStore = Path.Combine(localAppData, "pnpm", "store");
+            AddCandidate(candidates, "pnpm Store", pnpmStore, "pnpm content-addressable store.",
+                "pnpm stores shared dependency hardlinks.",
+                "pnpm will rebuild store as projects are installed.",
+                SafetyLevel.Review);
+
+            // Rust Cargo cache
+            string cargoCache = Path.Combine(userProfile, ".cargo", "registry", "cache");
+            AddCandidate(candidates, "Rust Cargo Registry Cache", cargoCache, "Downloaded Rust crates cache.",
+                "Cargo caches crate archive downloads.",
+                "Cargo will re-fetch crates when building new projects.",
+                SafetyLevel.LowRisk);
+
+            return candidates;
+        }, cancellationToken);
+    }
+
+    private void AddCandidate(List<CleanupCandidate> list, string title, string path, string desc, string reason, string whatHappen, SafetyLevel safety)
+    {
+        if (Directory.Exists(path))
+        {
+            long size = CalculateDirectorySize(path);
+            if (size > 20 * 1024 * 1024) // > 20MB
+            {
+                list.Add(new CleanupCandidate
+                {
+                    ProviderId = ProviderId,
+                    Title = title,
+                    Description = desc,
+                    Path = path,
+                    SizeBytes = size,
+                    Safety = safety,
+                    Reason = reason,
+                    WhatWillHappen = whatHappen,
+                    WillRegenerate = true,
+                    Category = StorageCategoryType.DevelopmentTools,
+                    IsSelected = safety == SafetyLevel.Safe // only auto-select Safe items by default
+                });
+            }
+        }
+    }
+
+    public async Task<CleanupResult> ExecuteCleanupAsync(
+        IReadOnlyList<CleanupCandidate> candidates,
+        IProgress<string>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await Task.Run(() =>
+        {
+            var result = new CleanupResult();
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            foreach (var cand in candidates)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                progress?.Report($"Purging {cand.Title}...");
+
+                if (Directory.Exists(cand.Path))
+                {
+                    var di = new DirectoryInfo(cand.Path);
+                    foreach (var file in di.EnumerateFiles("*", SearchOption.AllDirectories))
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        try
+                        {
+                            long len = file.Length;
+                            file.Delete();
+                            result.BytesCleaned += len;
+                            result.ItemsCleanedCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            result.FailedItemsCount++;
+                            result.ErrorMessages.Add($"Cannot remove {file.Name}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+
+            sw.Stop();
+            result.Duration = sw.Elapsed;
+            return result;
+        }, cancellationToken);
+    }
+
+    private static long CalculateDirectorySize(string path)
+    {
+        try
+        {
+            var di = new DirectoryInfo(path);
+            var opt = new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint };
+            return di.EnumerateFiles("*", opt).Sum(f => f.Length);
+        }
+        catch { return 0; }
+    }
+}
+
+public sealed class ApplicationCacheCleanupProvider : ICleanupProvider
+{
+    public string ProviderId => "app_caches";
+    public string DisplayName => "Application & Media Caches";
+    public string CategoryName => "AppData";
+    public bool IsAdvanced => false;
+
+    public async Task<List<CleanupCandidate>> ScanCandidatesAsync(CancellationToken cancellationToken = default)
+    {
+        return await Task.Run(() =>
+        {
+            var candidates = new List<CleanupCandidate>();
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+            // Spotify
+            string spotifyStorage = Path.Combine(localAppData, "Spotify", "Data");
+            if (!Directory.Exists(spotifyStorage)) spotifyStorage = Path.Combine(localAppData, "Spotify", "Storage");
+            AddCandidate(candidates, "Spotify Offline Media Cache", spotifyStorage, "Downloaded song streams and playlist cache.",
+                "Spotify caches songs locally to reduce network streaming bandwidth.",
+                "Streaming songs will download them again on-demand.", SafetyLevel.Review);
+
+            // Discord
+            string discordCache = Path.Combine(appData, "discord", "Cache", "Cache_Data");
+            AddCandidate(candidates, "Discord Media Cache", discordCache, "Cached avatars, images, and attachments.",
+                "Discord caches voice avatars and posted media.",
+                "Discord will reload media when channels are opened.", SafetyLevel.Safe);
+
+            // Teams
+            string teamsCache = Path.Combine(appData, "Microsoft", "Teams", "Cache");
+            AddCandidate(candidates, "Microsoft Teams Cache", teamsCache, "Teams cached meeting files and chat media.",
+                "Teams stores local media chunks.",
+                "Teams will rebuild cache on launch.", SafetyLevel.Safe);
+
+            // Explorer Thumbnail Cache
+            string thumbCache = Path.Combine(localAppData, "Microsoft", "Windows", "Explorer");
+            if (Directory.Exists(thumbCache))
+            {
+                long thumbSize = 0;
+                try
+                {
+                    var di = new DirectoryInfo(thumbCache);
+                    thumbSize = di.EnumerateFiles("thumbcache_*.db").Sum(f => f.Length);
+                }
+                catch { }
+
+                if (thumbSize > 15 * 1024 * 1024)
+                {
+                    candidates.Add(new CleanupCandidate
+                    {
+                        ProviderId = ProviderId,
+                        Title = "Windows Thumbnail Cache",
+                        Description = "Explorer thumbnail cache database for images, videos, and documents.",
+                        Path = thumbCache,
+                        SizeBytes = thumbSize,
+                        Safety = SafetyLevel.Safe,
+                        Reason = "Windows stores cached thumbnail preview images.",
+                        WhatWillHappen = "Deletes thumbnail databases. Windows Explorer will regenerate previews automatically when browsing folders.",
+                        WillRegenerate = true,
+                        Category = StorageCategoryType.TemporaryFiles
+                    });
+                }
+            }
+
+            return candidates;
+        }, cancellationToken);
+    }
+
+    private void AddCandidate(List<CleanupCandidate> list, string title, string path, string desc, string reason, string whatHappen, SafetyLevel safety)
+    {
+        if (Directory.Exists(path))
+        {
+            long size = CalculateDirectorySize(path);
+            if (size > 20 * 1024 * 1024) // > 20MB
+            {
+                list.Add(new CleanupCandidate
+                {
+                    ProviderId = ProviderId,
+                    Title = title,
+                    Description = desc,
+                    Path = path,
+                    SizeBytes = size,
+                    Safety = safety,
+                    Reason = reason,
+                    WhatWillHappen = whatHappen,
+                    WillRegenerate = true,
+                    Category = StorageCategoryType.AppData,
+                    IsSelected = safety == SafetyLevel.Safe
+                });
+            }
+        }
+    }
+
+    public async Task<CleanupResult> ExecuteCleanupAsync(
+        IReadOnlyList<CleanupCandidate> candidates,
+        IProgress<string>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await Task.Run(() =>
+        {
+            var result = new CleanupResult();
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            foreach (var cand in candidates)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                progress?.Report($"Cleaning {cand.Title}...");
+
+                if (Directory.Exists(cand.Path))
+                {
+                    var di = new DirectoryInfo(cand.Path);
+                    foreach (var file in di.EnumerateFiles("*", SearchOption.AllDirectories))
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        try
+                        {
+                            long len = file.Length;
+                            file.Delete();
+                            result.BytesCleaned += len;
+                            result.ItemsCleanedCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            result.FailedItemsCount++;
+                            result.ErrorMessages.Add($"Could not delete {file.Name}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+
+            sw.Stop();
+            result.Duration = sw.Elapsed;
+            return result;
+        }, cancellationToken);
+    }
+
+    private static long CalculateDirectorySize(string path)
+    {
+        try
+        {
+            var di = new DirectoryInfo(path);
+            var opt = new EnumerationOptions { IgnoreInaccessible = true, RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint };
+            return di.EnumerateFiles("*", opt).Sum(f => f.Length);
+        }
+        catch { return 0; }
+    }
+}

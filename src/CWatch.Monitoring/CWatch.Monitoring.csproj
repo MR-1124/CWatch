@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>CWatch.Monitoring</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CWatch.Core\CWatch.Core.csproj" />
+    <ProjectReference Include="..\CWatch.Analysis\CWatch.Analysis.csproj" />
+    <ProjectReference Include="..\CWatch.Storage\CWatch.Storage.csproj" />
+    <ProjectReference Include="..\CWatch.Infrastructure\CWatch.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
