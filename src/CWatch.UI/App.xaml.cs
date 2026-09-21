@@ -13,7 +13,7 @@ public partial class App : Application
 
     private DateTime _lastErrorMessageTime = DateTime.MinValue;
 
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
@@ -49,19 +49,40 @@ public partial class App : Application
             args.SetObserved();
         };
 
+        // Splash: instant visual feedback while services and data initialize.
+        var splash = new SplashWindow();
+        MainWindow = splash;
+        splash.Show();
+        splash.SetStatus("Preparing services");
+
         // Initialize Theme Engine
         ThemeManager.Instance.Initialize(ThemeMode.Dark);
 
-        // Resolve the fully wired dependency graph
+        splash.SetStatus("Loading settings");
         var mainVm = _services.GetRequiredService<MainViewModel>();
         var mainWindow = _services.GetRequiredService<MainWindow>();
 
         ShutdownMode = ShutdownMode.OnMainWindowClose;
 
+        // Fast init: schema/prune/dashboard load off the UI thread's critical path,
+        // then swap the splash for the main window. A failed init still shows the
+        // main window — pages surface their own error states.
+        splash.SetStatus("Reading drive history");
+        try
+        {
+            await mainVm.InitializeAsync();
+            splash.SetStatus("Ready");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Startup initialization failed; continuing with empty state.", ex);
+        }
+
         MainWindow = mainWindow;
         mainWindow.Show();
+        splash.CloseWithFade();
 
-        _ = mainVm.InitializeAsync();
+        _logger.LogInfo("Startup complete.");
     }
 
     protected override void OnExit(ExitEventArgs e)

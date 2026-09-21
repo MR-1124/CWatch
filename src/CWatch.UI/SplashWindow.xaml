@@ -1,0 +1,57 @@
+<Window x:Class="CWatch.UI.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="C:Watch" Height="300" Width="460"
+        WindowStyle="None" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="False" Background="Transparent"
+        AllowsTransparency="True">
+
+    <Window.Resources>
+        <Storyboard x:Key="SplashFadeIn">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                             From="0" To="1" Duration="0:0:0.25"/>
+        </Storyboard>
+    </Window.Resources>
+
+    <Border Background="{StaticResource BgCanvas}"
+            BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1"
+            CornerRadius="8" Padding="36">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Brand -->
+            <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Border Width="56" Height="56" CornerRadius="12"
+                        Background="{StaticResource BgCard}"
+                        BorderBrush="{StaticResource BorderSubtle}" BorderThickness="1"
+                        HorizontalAlignment="Center">
+                    <Image Source="Assets/app_icon.png" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Border>
+                <TextBlock Text="C:Watch" FontFamily="{StaticResource FontDisplay}"
+                           FontSize="26" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextPrimary}"
+                           HorizontalAlignment="Center" Margin="0,14,0,0"/>
+                <TextBlock Text="Storage intelligence" FontFamily="{StaticResource FontText}"
+                           FontSize="12" Foreground="{StaticResource TextMuted}"
+                           HorizontalAlignment="Center" Margin="0,2,0,0"/>
+            </StackPanel>
+
+            <!-- Progress: the instrument waking up -->
+            <ProgressBar Grid.Row="1" Height="4" IsIndeterminate="True"
+                         Foreground="{StaticResource AccentOrange}"
+                         Background="{StaticResource BgInput}"
+                         BorderThickness="0" Margin="0,0,0,12"/>
+
+            <TextBlock x:Name="StatusText" Grid.Row="2"
+                       Text="Starting"
+                       FontFamily="{StaticResource FontText}" FontSize="11.5"
+                       Foreground="{StaticResource TextSecondary}"
+                       HorizontalAlignment="Center"/>
+        </Grid>
+    </Border>
+</Window>

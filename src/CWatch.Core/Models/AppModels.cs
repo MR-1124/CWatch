@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+
 namespace CWatch.Core.Models;
 
 /// <summary>
@@ -37,22 +40,39 @@ public sealed class StorageReport
 }
 
 /// <summary>
-/// Application settings and user preferences.
+/// Application settings and user preferences. Observable so editors can track
+/// unsaved changes while the persistence layer keeps its own instance.
 /// </summary>
-public sealed class AppSettings
+public sealed class AppSettings : INotifyPropertyChanged
 {
-    public string AppTheme { get; set; } = "Dark"; // "Dark", "Light", "System"
-    public bool StartWithWindows { get; set; } = false;
-    public bool StartMinimized { get; set; } = false;
-    public bool TrayModeEnabled { get; set; } = true;
-    public bool MonitoringEnabled { get; set; } = true;
-    public int MonitorIntervalMinutes { get; set; } = 30;
-    public long WarningThresholdGb { get; set; } = 25;
-    public long CriticalThresholdGb { get; set; } = 10;
-    public int RetentionDays { get; set; } = 90;
-    public List<string> ExcludedPaths { get; set; } = [];
-    public bool RequireCleanupConfirmation { get; set; } = true;
-    public bool ShowAdvancedCleanupProviders { get; set; } = true;
-    public bool AutoScanOnLaunch { get; set; } = true;
-    public string TargetDriveLetter { get; set; } = "C:";
+    private string _appTheme = "Dark";
+    private bool _monitoringEnabled = true;
+    private int _monitorIntervalMinutes = 30;
+    private long _warningThresholdGb = 25;
+    private long _criticalThresholdGb = 10;
+    private int _retentionDays = 90;
+    private List<string> _excludedPaths = [];
+    private bool _autoScanOnLaunch = true;
+    private string _targetDriveLetter = "C:";
+
+    public string AppTheme { get => _appTheme; set => Set(ref _appTheme, value); }
+    public bool MonitoringEnabled { get => _monitoringEnabled; set => Set(ref _monitoringEnabled, value); }
+    public int MonitorIntervalMinutes { get => _monitorIntervalMinutes; set => Set(ref _monitorIntervalMinutes, value); }
+    public long WarningThresholdGb { get => _warningThresholdGb; set => Set(ref _warningThresholdGb, value); }
+    public long CriticalThresholdGb { get => _criticalThresholdGb; set => Set(ref _criticalThresholdGb, value); }
+    public int RetentionDays { get => _retentionDays; set => Set(ref _retentionDays, value); }
+
+    public List<string> ExcludedPaths { get => _excludedPaths; set => Set(ref _excludedPaths, value); }
+
+    public bool AutoScanOnLaunch { get => _autoScanOnLaunch; set => Set(ref _autoScanOnLaunch, value); }
+    public string TargetDriveLetter { get => _targetDriveLetter; set => Set(ref _targetDriveLetter, value); }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private void Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value)) return;
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
 }

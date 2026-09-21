@@ -112,7 +112,7 @@ public sealed class CleanupViewModel : ViewModelBase
         _cleanupEngine = cleanupEngine;
         _snapshotRepo = snapshotRepo;
 
-        ScanCandidatesCommand = new AsyncRelayCommand(ScanForRecommendationsAsync, () => !IsScanning && !IsCleaning);
+        ScanCandidatesCommand = new AsyncRelayCommand(RescanAsync, () => !IsScanning && !IsCleaning);
         RequestCleanSelectedCommand = new RelayCommand(OpenConfirmationModal, () => Candidates.Any(c => c.IsSelected) && !IsCleaning);
         ConfirmCleanCommand = new AsyncRelayCommand(ExecuteSelectedCleanupAsync, () => !IsCleaning);
         CancelCleanupCommand = new RelayCommand(() => _cleanupCts?.Cancel(), () => IsCleaning);
@@ -142,17 +142,34 @@ public sealed class CleanupViewModel : ViewModelBase
         });
     }
 
+    /// <summary>
+    /// Scan results stay valid for a short window so repeated navigation to the
+    /// Cleanup page does not re-walk temp/cache directories every time.
+    /// </summary>
+    private static readonly TimeSpan ScanFreshWindow = TimeSpan.FromMinutes(5);
+    private DateTime _lastScanUtc = DateTime.MinValue;
+
     public async Task ScanForRecommendationsAsync()
+    {
+        // Serve cached results when fresh; a manual re-scan always runs.
+        if (_allCandidates.Count > 0 && DateTime.UtcNow - _lastScanUtc < ScanFreshWindow)
+        {
+            return;
+        }
+
+        await RescanAsync();
+    }
+
+    public async Task RescanAsync()
     {
         IsScanning = true;
         StatusMessage = "Analyzing system temp, caches, and developer environments...";
-        _allCandidates.Clear();
-        Candidates.Clear();
 
         try
         {
             var results = await _cleanupEngine.ScanAllRecommendationsAsync();
             _allCandidates = results;
+            _lastScanUtc = DateTime.UtcNow;
 
             ApplyFilter();
             RecalculateTotal();

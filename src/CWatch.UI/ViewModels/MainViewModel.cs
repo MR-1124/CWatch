@@ -139,7 +139,7 @@ public sealed class MainViewModel : ViewModelBase
         RecurringVM = new RecurringViewModel(recurringDetector, snapshotRepo, settingsService);
         CleanupVM = new CleanupViewModel(cleanupEngine, snapshotRepo);
         ReportsVM = new ReportsViewModel(reportGenerator, storageAnalyzer, snapshotRepo, cleanupEngine, settingsService);
-        SettingsVM = new SettingsViewModel(settingsService, driveMonitor);
+        SettingsVM = new SettingsViewModel(settingsService, driveMonitor, ApplySavedSettingsToApp);
 
         NavigateCommand = new RelayCommand(param =>
         {
@@ -169,6 +169,26 @@ public sealed class MainViewModel : ViewModelBase
             "Light" => "System",
             _ => "Dark"
         };
+    }
+
+    /// <summary>
+    /// Re-targets the running application after settings are saved: refreshes the
+    /// dashboard for a new target drive, restarts monitoring with the new
+    /// interval, and applies the theme. Called by SettingsViewModel on save.
+    /// </summary>
+    public async Task ApplySavedSettingsToApp()
+    {
+        DriveStatus = _storageAnalyzer.GetDriveStatus(TargetDrive);
+        await DashboardVM.LoadDashboardDataAsync();
+
+        if (_settingsService.Settings.MonitoringEnabled && !_driveMonitor.IsRunning)
+        {
+            _driveMonitor.StartMonitoring(_settingsService.Settings.MonitorIntervalMinutes);
+        }
+        else if (!_settingsService.Settings.MonitoringEnabled && _driveMonitor.IsRunning)
+        {
+            _driveMonitor.StopMonitoring();
+        }
     }
 
     private void ApplyThemeFromSetting(string themeName)

@@ -138,10 +138,10 @@ public sealed class ReportsViewModel : ViewModelBase
 
         HealthRating = HealthScore switch
         {
-            >= 85 => "EXCELLENT",
-            >= 70 => "HEALTHY",
-            >= 50 => "ATTENTION REQUIRED",
-            _ => "CRITICAL CAPACITY RISK"
+            >= 85 => "Excellent",
+            >= 70 => "Healthy",
+            >= 50 => "Attention needed",
+            _ => "Critical"
         };
     }
 
@@ -169,35 +169,35 @@ public sealed class ReportsViewModel : ViewModelBase
     <meta charset='utf-8'/>
     <title>C:Watch Storage Intelligence Report</title>
     <style>
-        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0B0C10; color: #F8F9FA; padding: 40px; line-height: 1.6; max-width: 960px; margin: 0 auto; }}
-        h1 {{ color: #FF5722; border-bottom: 2px solid #232838; padding-bottom: 12px; font-size: 24px; }}
-        h2 {{ color: #94A3B8; margin-top: 28px; font-size: 16px; text-transform: uppercase; letter-spacing: 0.5px; }}
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #0C0E12; color: #F2F4F7; padding: 40px; line-height: 1.6; max-width: 960px; margin: 0 auto; }}
+        h1 {{ color: #F2632B; border-bottom: 2px solid #252B38; padding-bottom: 12px; font-size: 24px; }}
+        h2 {{ color: #9AA6B5; margin-top: 28px; font-size: 14px; }}
         table {{ width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }}
-        th, td {{ border: 1px solid #232838; padding: 10px 14px; text-align: left; }}
-        th {{ background-color: #151822; color: #94A3B8; font-weight: bold; }}
-        tr:nth-child(even) {{ background-color: #12141D; }}
+        th, td {{ border: 1px solid #252B38; padding: 10px 14px; text-align: left; }}
+        th {{ background-color: #151922; color: #9AA6B5; font-weight: bold; }}
+        tr:nth-child(even) {{ background-color: #11141C; }}
         .badge {{ display: inline-block; padding: 3px 8px; border-radius: 3px; font-weight: bold; font-size: 11px; }}
-        .badge-safe {{ background: #064E3B; color: #34D399; }}
-        .badge-warn {{ background: #78350F; color: #FDE047; }}
-        .card {{ background: #151822; border-radius: 4px; padding: 20px; margin: 16px 0; border: 1px solid #232838; }}
+        .badge-safe {{ background: #14301F; color: #3DB583; }}
+        .badge-warn {{ background: #33270D; color: #E3A93C; }}
+        .card {{ background: #151922; border-radius: 6px; padding: 20px; margin: 16px 0; border: 1px solid #252B38; }}
         .metric-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }}
-        .metric-box {{ background: #12141D; padding: 12px; border-radius: 3px; border: 1px solid #232838; }}
-        .metric-val {{ font-size: 18px; font-weight: bold; color: #F8F9FA; margin-top: 4px; }}
+        .metric-box {{ background: #11141C; padding: 12px; border-radius: 4px; border: 1px solid #252B38; }}
+        .metric-val {{ font-size: 18px; font-weight: bold; color: #F2F4F7; margin-top: 4px; }}
     </style>
 </head>
 <body>
     <h1>C:Watch Storage Intelligence Report</h1>
     <div class='card'>
-        <h2>Drive Overview ({CurrentReport.DriveStatus.DriveLetter})</h2>
+        <h2>Drive overview ({CurrentReport.DriveStatus.DriveLetter})</h2>
         <div class='metric-grid'>
-            <div class='metric-box'><div>TOTAL CAPACITY</div><div class='metric-val'>{ByteSizeFormatter.Format(CurrentReport.DriveStatus.TotalBytes)}</div></div>
-            <div class='metric-box'><div>USED ALLOCATION</div><div class='metric-val' style='color:#FF5722;'>{ByteSizeFormatter.Format(CurrentReport.DriveStatus.UsedBytes)} ({CurrentReport.DriveStatus.UsedPercentage:F1}%)</div></div>
-            <div class='metric-box'><div>AVAILABLE HEADROOM</div><div class='metric-val' style='color:#10B981;'>{ByteSizeFormatter.Format(CurrentReport.DriveStatus.FreeBytes)} ({CurrentReport.DriveStatus.FreePercentage:F1}%)</div></div>
+            <div class='metric-box'><div>Total capacity</div><div class='metric-val'>{ByteSizeFormatter.Format(CurrentReport.DriveStatus.TotalBytes)}</div></div>
+            <div class='metric-box'><div>Used</div><div class='metric-val' style='color:#F2632B;'>{ByteSizeFormatter.Format(CurrentReport.DriveStatus.UsedBytes)} ({CurrentReport.DriveStatus.UsedPercentage:F1}%)</div></div>
+            <div class='metric-box'><div>Free</div><div class='metric-val' style='color:#3DB583;'>{ByteSizeFormatter.Format(CurrentReport.DriveStatus.FreeBytes)} ({CurrentReport.DriveStatus.FreePercentage:F1}%)</div></div>
         </div>
-        <p style='margin-top: 16px;'><strong>Safe Cleanup Potential:</strong> <span style='color:#10B981; font-weight:bold;'>{CurrentReport.FormattedRecommendedCleanup}</span></p>
+        <p style='margin-top: 16px;'><strong>Safe cleanup potential:</strong> <span style='color:#3DB583; font-weight:bold;'>{CurrentReport.FormattedRecommendedCleanup}</span></p>
     </div>
 
-    <h2>Recommended Cleanups</h2>
+    <h2>Recommended cleanups</h2>
     <table>
         <tr><th>Item</th><th>Category</th><th>Size</th><th>Safety</th><th>Reason</th></tr>";
 
@@ -215,7 +215,7 @@ public sealed class ReportsViewModel : ViewModelBase
 
             html += @"
     </table>
-    <p style='color: #64748B; font-size: 12px; margin-top: 40px;'>Generated by C:Watch — 100% Local & Privacy-Focused Storage Intelligence.</p>
+    <p style='color: #677182; font-size: 12px; margin-top: 40px;'>Generated by C:Watch — 100% local and privacy-focused storage intelligence.</p>
 </body>
 </html>";
 
@@ -238,18 +238,60 @@ public sealed class SettingsViewModel : ViewModelBase
 {
     private readonly ISettingsService _settingsService;
     private readonly IDriveMonitor _driveMonitor;
-    private AppSettings _settings;
+    private readonly Func<Task> _applySettingsToApp;
+    private readonly string _configuredDrive;
     private string _statusMessage = string.Empty;
+    private bool _hasUnsavedChanges;
+    private bool _isSaving;
+    private AppSettings _snapshotAtLoad;
 
-    public AppSettings Settings
+    public SettingsViewModel(ISettingsService settingsService, IDriveMonitor driveMonitor)
+        : this(settingsService, driveMonitor, null)
     {
-        get => _settings;
-        set => SetProperty(ref _settings, value);
     }
 
     /// <summary>
-    /// Fixed, ready volumes offered as scan/monitoring targets in the UI.
+    /// Full constructor. <paramref name="applySettingsToApp"/> re-targets the live app
+    /// (dashboard, monitoring, theme) after a successful save.
     /// </summary>
+    public SettingsViewModel(
+        ISettingsService settingsService,
+        IDriveMonitor driveMonitor,
+        Func<Task>? applySettingsToApp)
+    {
+        _settingsService = settingsService;
+        _driveMonitor = driveMonitor;
+        _applySettingsToApp = applySettingsToApp ?? ApplyAsync;
+
+        // Edit a clone; the service's live instance only changes on Save.
+        _snapshotAtLoad = Clone(_settingsService.Settings);
+        Settings = Clone(_settingsService.Settings);
+        _configuredDrive = DriveLetters.Normalize(Settings.TargetDriveLetter);
+
+        var drives = DriveInfo.GetDrives()
+            .Where(d => d.IsReady && d.DriveType == DriveType.Fixed)
+            .Select(d => DriveLetters.Normalize(d.Name))
+            .Distinct()
+            .OrderBy(d => d, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        // Always offer the configured target even if not enumerable right now.
+        if (!drives.Contains(_configuredDrive))
+        {
+            drives.Insert(0, _configuredDrive);
+        }
+
+        AvailableDrives = drives;
+
+        SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync, () => HasUnsavedChanges && !IsSaving);
+        ResetDefaultsCommand = new AsyncRelayCommand(ResetDefaultsAsync);
+        DiscardChangesCommand = new RelayCommand(DiscardChanges);
+
+        WireSettingsNotifications();
+    }
+
+    public AppSettings Settings { get; private set; }
+
     public IReadOnlyList<string> AvailableDrives { get; }
 
     public string SelectedDrive
@@ -262,16 +304,8 @@ public sealed class SettingsViewModel : ViewModelBase
             {
                 Settings.TargetDriveLetter = normalized;
                 OnPropertyChanged();
-                StatusMessage = $"Target drive set to {normalized}. New scans, snapshots, and monitoring will follow it.";
-                _ = SaveSettingsAsync();
             }
         }
-    }
-
-    public string StatusMessage
-    {
-        get => _statusMessage;
-        set => SetProperty(ref _statusMessage, value);
     }
 
     public string SelectedTheme
@@ -283,54 +317,106 @@ public sealed class SettingsViewModel : ViewModelBase
             {
                 Settings.AppTheme = value;
                 OnPropertyChanged();
-                if (Enum.TryParse<CWatch.UI.Services.ThemeMode>(value, true, out var mode))
-                {
-                    CWatch.UI.Services.ThemeManager.Instance.SetTheme(mode);
-                }
-                _ = SaveSettingsAsync();
             }
         }
     }
 
+    /// <summary>True when any edited value differs from the last saved snapshot.</summary>
+    public bool HasUnsavedChanges
+    {
+        get => _hasUnsavedChanges;
+        set
+        {
+            if (SetProperty(ref _hasUnsavedChanges, value))
+            {
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    public bool IsSaving
+    {
+        get => _isSaving;
+        set
+        {
+            if (SetProperty(ref _isSaving, value))
+            {
+                System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            }
+        }
+    }
+
+    public string StatusMessage
+    {
+        get => _statusMessage;
+        set => SetProperty(ref _statusMessage, value);
+    }
+
     public ICommand SaveSettingsCommand { get; }
     public ICommand ResetDefaultsCommand { get; }
-
-    public SettingsViewModel(ISettingsService settingsService, IDriveMonitor driveMonitor)
-    {
-        _settingsService = settingsService;
-        _driveMonitor = driveMonitor;
-        _settings = _settingsService.Settings;
-
-        var drives = DriveInfo.GetDrives()
-            .Where(d => d.IsReady && d.DriveType == DriveType.Fixed)
-            .Select(d => DriveLetters.Normalize(d.Name))
-            .Distinct()
-            .OrderBy(d => d, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-
-        // Always offer the configured target even if the volume is not enumerable right now.
-        string configured = DriveLetters.Normalize(_settings.TargetDriveLetter);
-        if (!drives.Contains(configured))
-        {
-            drives.Insert(0, configured);
-        }
-
-        AvailableDrives = drives;
-
-        SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
-        ResetDefaultsCommand = new AsyncRelayCommand(ResetDefaultsAsync);
-    }
+    public ICommand DiscardChangesCommand { get; }
 
     public async Task SaveSettingsAsync()
     {
-        await _settingsService.SaveSettingsAsync();
-        StatusMessage = "Settings saved successfully.";
-        
+        IsSaving = true;
+        try
+        {
+            // Push edited clone into the live service instance, then persist.
+            CopyInto(Settings, _settingsService.Settings);
+            await _settingsService.SaveSettingsAsync();
+            _snapshotAtLoad = Clone(_settingsService.Settings);
+            HasUnsavedChanges = false;
+            StatusMessage = "Settings saved.";
+
+            // Re-target the running app: dashboard, monitoring, theme.
+            await _applySettingsToApp();
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    private void DiscardChanges()
+    {
+        Settings = Clone(_snapshotAtLoad);
+        WireSettingsNotifications();
+        HasUnsavedChanges = false;
+        StatusMessage = "Changes discarded.";
+        OnPropertyChanged(nameof(SelectedDrive));
+        OnPropertyChanged(nameof(SelectedTheme));
+        OnPropertyChanged(nameof(Settings));
+    }
+
+    private async Task ResetDefaultsAsync()
+    {
+        // Stage defaults on the clone. Resetting used to swap the service's live
+        // AppSettings reference and save immediately, desyncing persistence; now
+        // reset is an edit like any other and requires Save to take effect.
+        Settings = new AppSettings();
+        WireSettingsNotifications();
+        HasUnsavedChanges = true;
+        StatusMessage = "Defaults staged. Review and save to apply.";
+        OnPropertyChanged(nameof(SelectedDrive));
+        OnPropertyChanged(nameof(SelectedTheme));
+        OnPropertyChanged(nameof(Settings));
+        await Task.CompletedTask;
+    }
+
+    private async Task ApplyAsync()
+    {
+        // Fallback applier when no app-level hook is wired: theme + monitor only.
         if (Enum.TryParse<CWatch.UI.Services.ThemeMode>(Settings.AppTheme, true, out var mode))
         {
             CWatch.UI.Services.ThemeManager.Instance.SetTheme(mode);
         }
 
+        ApplyMonitoring();
+        await Task.CompletedTask;
+    }
+
+    private void ApplyMonitoring()
+    {
         if (Settings.MonitoringEnabled && !_driveMonitor.IsRunning)
         {
             _driveMonitor.StartMonitoring(Settings.MonitorIntervalMinutes);
@@ -341,12 +427,60 @@ public sealed class SettingsViewModel : ViewModelBase
         }
     }
 
-    private async Task ResetDefaultsAsync()
+    private bool HasPendingEdits()
     {
-        Settings = new AppSettings();
-        await _settingsService.SaveSettingsAsync();
-        StatusMessage = "Settings restored to defaults.";
-        SelectedTheme = Settings.AppTheme;
-        OnPropertyChanged(nameof(SelectedDrive));
+        var a = _snapshotAtLoad;
+        var b = Settings;
+        return a.TargetDriveLetter != b.TargetDriveLetter
+            || a.AppTheme != b.AppTheme
+            || a.MonitoringEnabled != b.MonitoringEnabled
+            || a.MonitorIntervalMinutes != b.MonitorIntervalMinutes
+            || a.WarningThresholdGb != b.WarningThresholdGb
+            || a.CriticalThresholdGb != b.CriticalThresholdGb
+            || a.RetentionDays != b.RetentionDays
+            || a.AutoScanOnLaunch != b.AutoScanOnLaunch
+            || !a.ExcludedPaths.SequenceEqual(b.ExcludedPaths);
+    }
+
+    private static AppSettings Clone(AppSettings s) => new()
+    {
+        AppTheme = s.AppTheme,
+        MonitoringEnabled = s.MonitoringEnabled,
+        MonitorIntervalMinutes = s.MonitorIntervalMinutes,
+        WarningThresholdGb = s.WarningThresholdGb,
+        CriticalThresholdGb = s.CriticalThresholdGb,
+        RetentionDays = s.RetentionDays,
+        ExcludedPaths = [.. s.ExcludedPaths],
+        AutoScanOnLaunch = s.AutoScanOnLaunch,
+        TargetDriveLetter = s.TargetDriveLetter
+    };
+
+    private static void CopyInto(AppSettings from, AppSettings to)
+    {
+        to.AppTheme = from.AppTheme;
+        to.MonitoringEnabled = from.MonitoringEnabled;
+        to.MonitorIntervalMinutes = from.MonitorIntervalMinutes;
+        to.WarningThresholdGb = from.WarningThresholdGb;
+        to.CriticalThresholdGb = from.CriticalThresholdGb;
+        to.RetentionDays = from.RetentionDays;
+        to.ExcludedPaths = [.. from.ExcludedPaths];
+        to.AutoScanOnLaunch = from.AutoScanOnLaunch;
+        to.TargetDriveLetter = from.TargetDriveLetter;
+    }
+
+    private void WireSettingsNotifications()
+    {
+        Settings.PropertyChanged -= OnSettingsPropertyChanged;
+        Settings.PropertyChanged += OnSettingsPropertyChanged;
+    }
+
+    private void OnSettingsPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(AppSettings.TargetDriveLetter) or nameof(AppSettings.AppTheme))
+        {
+            OnPropertyChanged(nameof(SelectedDrive));
+            OnPropertyChanged(nameof(SelectedTheme));
+        }
+        HasUnsavedChanges = HasPendingEdits();
     }
 }

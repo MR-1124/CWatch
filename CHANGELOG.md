@@ -10,6 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Splash screen**: branded window appears instantly at launch with staged status (services, settings, drive history) and fades into the main window. Startup initialization now runs behind it, so the app never shows a blank frame.
+
+### Fixed
+- **Restore defaults never persisted**: it swapped the settings service's live object reference and saved immediately; the service kept serializing the old instance. Reset now stages defaults like any edit and requires Save.
+- **Drive change was silent**: picking a new target drive saved it, but the dashboard, labels, and monitoring kept the old drive until restart. Saving settings now re-targets the running app immediately.
+- **Fire-and-forget saves** surfaced no failure. Settings now save through an explicit Save action with a pending-changes bar, working Save button, and discard option.
+
+### Changed
+- **Settings page reworked**: edits apply only on Save (clone-based staging with change detection), plain-language labels, theme options without emoji, and a two-column layout for scanning rows.
+- **Performance**: exclusion globs are parsed once and cached instead of per path evaluation; the Cleanup page caches scan results for five minutes instead of rescanning the filesystem on every visit.
+- **Removed dead settings**: `StartWithWindows`, `StartMinimized`, `TrayModeEnabled`, `RequireCleanupConfirmation`, and `ShowAdvancedCleanupProviders` were serialized but read by nothing; deleted from the model and Settings page.
+
+### Added
 - **Multi-Drive Support**: New Target Drive selector in Settings drives all scanning, snapshots, background monitoring, trends, and reports. Recycle Bin cleanup now enumerates every ready local volume instead of only C:.
 - **Dependency Injection**: Application composition moved to `Microsoft.Extensions.DependencyInjection` (`AppComposition.BuildServices`) with a test-override callback; ViewModels and services are now resolvable and unit-testable. The test suite references the full UI project and asserts the composition graph.
 - **Hardened Path Safety**: `PathSafetyValidator` now rejects descendants of protected subtrees (Program Files, Windows, ProgramData, personal libraries), 8.3 short-name aliases (C:\PROGRA~1), Win32 trailing dot/space evasion, UNC/device paths, and junction/symlink cleanup targets - with a sanctioned carve-out for `Windows\Temp`. 8.3 aliases of protected roots are pre-registered via GetShortPathName.
