@@ -1,0 +1,124 @@
+name: Release
+
+# One-command releases: push a tag, get a draft release with all dist artifacts.
+#
+#   git tag v1.1.3
+#   git push origin v1.1.3
+#
+# A draft release appears with the three dist artifacts and SHA-256 checksums
+# pre-filled in the notes; review, then click Publish.
+#
+# The version passed to the packaging script is derived from the tag, so
+# packaging/build_dist.ps1's default $Version never has to be edited for
+# releases (it is only the local convenience default).
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build dist & draft release
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Derive Version from Tag
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          if ($tag -notmatch '^v\d+\.\d+\.\d+') {
+            Write-Error "Tag '$tag' does not look like a release version (expected vMAJOR.MINOR.PATCH)."
+            exit 1
+          }
+          $version = $tag.TrimStart('v')
+          Write-Host "Releasing version $version from tag $tag"
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build Solution
+        run: dotnet build CWatch.sln -c Release --nologo
+
+      - name: Run Test Suite
+        run: >
+          dotnet test tests/CWatch.Tests/CWatch.Tests.csproj
+          -c Release --no-build --nologo -v minimal
+
+      - name: Build Distribution Packages
+        shell: pwsh
+        run: >
+          pwsh -NoProfile -ExecutionPolicy Bypass
+          -File packaging/build_dist.ps1
+          -Version '${{ steps.version.outputs.version }}'
+
+      - name: Compute SHA-256 Checksums
+        shell: pwsh
+        run: |
+          $artifacts = Get-ChildItem -Path dist -File |
+            Where-Object { $_.Name -match '^CWatch-(Setup-v.*\.exe|v.*-win-x64-(Portable|Setup)\.zip)$' }
+          if ($artifacts.Count -ne 3) {
+            Write-Error "Expected 3 dist artifacts, found $($artifacts.Count): $($artifacts.Name -join ', ')"
+            exit 1
+          }
+          $lines = $artifacts | ForEach-Object {
+            $hash = (Get-FileHash -Path $_.FullName -Algorithm SHA256).Hash
+            "$hash  $($_.Name)"
+          }
+          # Written as a real file: multiline step outputs keep %0A escapes when
+          # read back through env vars, and a sums file is a usable asset anyway.
+          $lines | Set-Content -Path dist/SHA256SUMS.txt -Encoding ascii
+          Write-Host ($lines -join "`n")
+
+      - name: Create Draft Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $sums = Get-Content -Raw dist/SHA256SUMS.txt
+          $notes = @"
+          C:Watch v$env:VERSION draft release.
+
+          Built automatically from tag v$env:VERSION by GitHub Actions.
+          Commit: ${{ github.sha }}
+
+          ## Checksums (SHA-256)
+          `````
+          $sums
+          `````
+
+          Verify with: ``sha256sum -c SHA256SUMS.txt`` (asset included in this release).
+
+          Edit these notes to describe the release before publishing.
+          "@
+          $notesPath = Join-Path $env:RUNNER_TEMP "notes-v$env:VERSION.md"
+          [System.IO.File]::WriteAllText($notesPath, $notes)
+          gh release create "v$env:VERSION" --draft --title "v$env:VERSION" --notes-file $notesPath
+
+      - name: Upload Release Assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $assets = @(Get-ChildItem -Path dist -File | ForEach-Object { $_.FullName })
+          if ($assets.Count -ne 4) {
+            Write-Error "Expected 3 artifacts plus SHA256SUMS.txt, found $($assets.Count)."
+            exit 1
+          }
+          foreach ($asset in $assets) {
+            Write-Host "Uploading $(Split-Path -Leaf $asset)..."
+            gh release upload "v$env:VERSION" $asset --clobber
+          }
+          Write-Host "All assets uploaded. Release is draft and ready for review."
