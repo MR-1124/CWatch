@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [1.1.1] - 2026-09-21
 
 ### Added
 - **Splash screen**: branded window appears instantly at launch with staged status (services, settings, drive history) and fades into the main window. Startup initialization now runs behind it, so the app never shows a blank frame.

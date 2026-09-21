@@ -96,17 +96,17 @@ Traditional disk cleaners and tree analyzers only tell you what files exist *rig
 ## 📥 Installation
 
 ### Option 1: Standalone GUI Setup Wizard (Recommended)
-1. Download **[`CWatch-Setup-v1.1.0.exe`](https://github.com/MR-1124/CWatch/releases/download/v1.1.0/CWatch-Setup-v1.1.0.exe)** from [GitHub Releases](https://github.com/MR-1124/CWatch/releases).
+1. Download **[`CWatch-Setup-v1.1.1.exe`](https://github.com/MR-1124/CWatch/releases/download/v1.1.1/CWatch-Setup-v1.1.1.exe)** from [GitHub Releases](https://github.com/MR-1124/CWatch/releases).
 2. Double-click the executable to launch the step-by-step installation wizard.
 3. Configure your installation path and shortcut preferences, then click **Install**.
 
 ### Option 2: Setup Zip Package
-1. Download **`CWatch-v1.1.0-win-x64-Setup.zip`**.
+1. Download **`CWatch-v1.1.1-win-x64-Setup.zip`**.
 2. Extract the archive and double-click **`Setup.cmd`** (or `Setup.exe`).
 3. C:Watch will install to `%LOCALAPPDATA%\Programs\CWatch` and create Start Menu and Desktop shortcuts.
 
 ### Option 3: Portable Package (No Installation Required)
-1. Download **`CWatch-v1.1.0-win-x64-Portable.zip`**.
+1. Download **`CWatch-v1.1.1-win-x64-Portable.zip`**.
 2. Extract anywhere and launch **`CWatch.UI.exe`**.
 
 ### Option 3: Build from Source

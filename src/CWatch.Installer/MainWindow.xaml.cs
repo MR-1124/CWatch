@@ -319,7 +319,7 @@ public partial class MainWindow : Window
             if (key != null)
             {
                 key.SetValue("DisplayName", "C:Watch Storage Intelligence");
-                key.SetValue("DisplayVersion", "1.1.0");
+                key.SetValue("DisplayVersion", "1.1.1");
                 key.SetValue("Publisher", "MR-1124");
                 key.SetValue("DisplayIcon", Path.Combine(installDir, "Assets", "app.ico"));
                 key.SetValue("UninstallString", $"\"{Path.Combine(installDir, "uninstall.cmd")}\"");
