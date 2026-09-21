@@ -256,6 +256,7 @@ public sealed class MainViewModel : ViewModelBase
         if (IsScanning) return;
 
         IsScanning = true;
+        ScanProgress = new ScanProgressInfo(); // don't show the previous scan's 100% while the new one starts
         _scanCts = new CancellationTokenSource();
         var progress = new Progress<ScanProgressInfo>(p => ScanProgress = p);
 
