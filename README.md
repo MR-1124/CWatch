@@ -13,12 +13,14 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MR-1124/CWatch/releases"><img src="https://img.shields.io/github/v/release/MR-1124/CWatch?color=FF5722&label=Release&style=flat-square" alt="GitHub Release"></a>
+  <a href="https://github.com/MR-1124/CWatch/releases"><img src="https://img.shields.io/github/v/release/MR-1124/CWatch?color=F2632B&label=Release&style=flat-square" alt="GitHub Release"></a>
+  <a href="https://github.com/MR-1124/CWatch/releases"><img src="https://img.shields.io/github/downloads/MR-1124/CWatch/total?color=F2632B&label=Downloads&style=flat-square" alt="Downloads"></a>
+  <a href="https://github.com/MR-1124/CWatch/actions/workflows/build-and-test.yml"><img src="https://img.shields.io/github/actions/workflow/status/MR-1124/CWatch/build-and-test.yml?branch=main&label=CI&style=flat-square" alt="CI"></a>
   <img src="https://img.shields.io/badge/Platform-Windows%2010%20%7C%2011-0078D4?style=flat-square&logo=windows" alt="Platform: Windows 10/11">
   <img src="https://img.shields.io/badge/.NET-8.0%20WPF-512BD4?style=flat-square&logo=dotnet" alt=".NET 8.0">
   <img src="https://img.shields.io/badge/Privacy-100%25%20Offline%20%2F%20Zero%20Telemetry-10B981?style=flat-square&logo=shield" alt="100% Offline">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/Tests-27%20Passing-success?style=flat-square" alt="Tests: 27 Passing">
+  <img src="https://img.shields.io/badge/Tests-99%20Passing-10B981?style=flat-square" alt="Tests: 99 Passing">
 </p>
 
 ---
@@ -109,7 +111,7 @@ Traditional disk cleaners and tree analyzers only tell you what files exist *rig
 1. Download **`CWatch-v1.1.2-win-x64-Portable.zip`**.
 2. Extract anywhere and launch **`CWatch.UI.exe`**.
 
-### Option 3: Build from Source
+### Option 4: Build from Source
 ```powershell
 # Prerequisites: .NET 8.0 SDK
 git clone https://github.com/MR-1124/CWatch.git
@@ -147,9 +149,19 @@ d:\Project\CWatch\
 
 ---
 
+## 📸 Screenshots
+
+<!-- Replace these placeholders with real captures: run docs/capture-screenshots.ps1 -->
+
+| Dashboard | Storage Explorer |
+|---|---|
+| ![Dashboard](docs/assets/screenshot-dashboard.png) | ![Explorer](docs/assets/screenshot-explorer.png) |
+| **Cleanup** | **History & Trends** |
+| ![Cleanup](docs/assets/screenshot-cleanup.png) | ![History](docs/assets/screenshot-history.png) |
+
 ## 🤝 Contributing
 
-Contributions are welcome! Please check out [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines, building instructions, and commit conventions.
+Contributions are welcome! Check [CONTRIBUTING.md](CONTRIBUTING.md) for setup and conventions, and [ROADMAP.md](ROADMAP.md) for ideas ranging from `good first issue` to bigger architectural work.
 
 ---
 

@@ -72,6 +72,12 @@ The solution follows a clean, modular architecture:
 
 ---
 
+## 🧭 What to Work On
+
+Start with [ROADMAP.md](ROADMAP.md): it lists scoped `good first issue`
+candidates, larger feature work, and the project's non-goals. Look for
+issues labeled `good first issue` or `help wanted`.
+
 ## 🐛 Reporting Bugs & Requesting Features
 
 - **Bug Reports**: Please include your Windows version, steps to reproduce, and any relevant log snippets from `%LOCALAPPDATA%\CWatch\Logs\`.

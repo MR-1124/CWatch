@@ -1,31 +1,35 @@
 ---
 name: Bug report
-about: Create a report to help us improve C:Watch
-title: '[BUG] '
+about: Something broke or behaves unexpectedly
 labels: bug
-assignees: ''
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**What happened?**
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Open '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+A clear description of the problem.
+
+**Steps to reproduce**
+
+1.
+2.
+3.
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+
+What you expected to happen instead.
 
 **Screenshots**
-If applicable, add screenshots to help explain your problem.
 
-**Environment details:**
- - OS: Windows 10 / Windows 11 (Version/Build)
- - C:Watch Version: [e.g. 1.0.0]
- - .NET Version: [.NET 8.0]
+If applicable.
+
+**Environment**
+
+- C:Watch version: (see Settings page or release tag)
+- Windows version:
+- Install type: installer / portable
 
 **Additional context**
-Add any other context or log lines from `%LOCALAPPDATA%\CWatch\Logs\` here.
+
+Anything else that may help. Log files are at
+`%LOCALAPPDATA%\CWatch\Logs` — please attach the most recent one,
+redacting anything you consider private.

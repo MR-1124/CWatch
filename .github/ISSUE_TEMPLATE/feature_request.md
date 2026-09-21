@@ -1,19 +1,22 @@
 ---
 name: Feature request
 about: Suggest an idea for C:Watch
-title: '[FEAT] '
 labels: enhancement
-assignees: ''
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**Problem to solve**
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+What are you trying to do, and what gets in the way today?
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**Proposed solution**
 
-**Additional context**
-Add any other context, screenshots, or mockups about the feature request here.
+What you imagine the feature looking like. Plain language beats specs.
+
+**Alternatives considered**
+
+Other tools, workarounds, or settings that partially solve it.
+
+**Is this something you'd like to build?**
+
+Some feature requests come with a contributor — if that's you, say so and
+check [ROADMAP.md](../ROADMAP.md) to see if it fits the project direction.
