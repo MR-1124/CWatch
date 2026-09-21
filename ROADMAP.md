@@ -46,12 +46,13 @@ Designed enough to start, open enough to shape.
 
 ## Under the hood
 
-- **Raise `FileSystemScanner` test coverage** — size aggregation, junction
-  skipping, cancellation, progress reporting all need fixture-based tests.
 - **Destructive-path coverage for cleanup providers** — temp-dir fixtures
   proving each provider deletes exactly what it claims.
 - **ViewModel test layer** — ViewModels are DI-resolvable now; test their
   filter/sort/delete logic without the UI.
+- **Decouple analysis from storage** — `GrowthAnalyzer` takes an
+  `ISnapshotRepository`, coupling the analysis layer to SQLite and blocking
+  pure unit tests of growth math. Extract a snapshot-history interface.
 - **MSIX / Microsoft Store packaging** — an alternative distribution channel
   with auto-updates.
 

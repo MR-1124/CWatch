@@ -1,0 +1,37 @@
+name: Greet first-time contributors
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  greeting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Welcome first-time contributors
+        uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
+            Thanks for opening your first issue! 🎉
+
+            A maintainer will take a look soon. If it's a bug, the log file at
+            `%LOCALAPPDATA%\CWatch\Logs` (most recent `cwatch_*.log`) helps a lot.
+
+            If you'd like to contribute code yourself, [ROADMAP.md](https://github.com/MR-1124/CWatch/blob/main/ROADMAP.md)
+            lists scoped starter tasks, and [CONTRIBUTING.md](https://github.com/MR-1124/CWatch/blob/main/CONTRIBUTING.md)
+            has build instructions — it's `dotnet build CWatch.sln` and
+            `dotnet test tests/CWatch.Tests/CWatch.Tests.csproj`.
+          pr-message: |
+            Thanks for your first pull request! 🎉
+
+            CI runs the build and the full test suite automatically. Before a
+            human reviews: `dotnet build CWatch.sln -c Release` clean and all
+            tests green is the bar. Design notes for UI changes live in
+            [docs/design-notes.md](https://github.com/MR-1124/CWatch/blob/main/docs/design-notes.md).
