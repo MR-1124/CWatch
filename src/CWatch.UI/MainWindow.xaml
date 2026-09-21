@@ -214,7 +214,10 @@
                     <!-- Scan progress, shown only while scanning -->
                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
                                 Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}">
-                        <ProgressBar Width="140" Height="6" IsIndeterminate="True" BorderThickness="0" Margin="0,0,10,0"
+                        <ProgressBar Width="140" Height="6" BorderThickness="0" Margin="0,0,10,0"
+                                     Minimum="0" Maximum="100"
+                                     Value="{Binding ScanProgress.EstimatedPercent, Mode=OneWay}"
+                                     IsIndeterminate="{Binding ScanProgress.IsIndeterminate, Mode=OneWay}"
                                      Foreground="{DynamicResource AccentOrange}"/>
                         <TextBlock Text="{Binding ScanProgress.CurrentPhase}" FontSize="{StaticResource FontSizeCaption}"
                                    Foreground="{DynamicResource AccentOrange}" FontWeight="SemiBold" VerticalAlignment="Center"/>

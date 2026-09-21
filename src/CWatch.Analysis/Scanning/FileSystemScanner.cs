@@ -62,6 +62,30 @@ public sealed class FileSystemScanner : IFileSystemScanner
             long bytesProcessed = 0;
             long lastProgressTick = 0;
 
+            // Progress heuristic (equal share per subdirectory):
+            // the root owns a share of 1.0. Each directory splits its share evenly among the
+            // subdirectories it will recurse into; a directory with no subdirectories adds its
+            // whole share to completedShare once its files are processed. completedShare only
+            // grows and reaches exactly 1.0 when the walk ends, without a costly pre-count.
+            // It ignores how big each subtree really is, so the bar can speed up or stall
+            // (e.g. one huge user profile next to small ones), but it never goes backwards.
+            double completedShare = 0;
+
+            // Progress<T> posts to the UI thread asynchronously, so every report is a fresh
+            // snapshot: the UI never reads an instance the scan thread is still mutating, and
+            // bindings see a new object (MainViewModel.SetProperty compares by reference).
+            ScanProgressInfo Snapshot() => new()
+            {
+                CurrentPath = progressInfo.CurrentPath,
+                CurrentPhase = progressInfo.CurrentPhase,
+                FilesScanned = progressInfo.FilesScanned,
+                DirectoriesScanned = progressInfo.DirectoriesScanned,
+                BytesProcessed = progressInfo.BytesProcessed,
+                EstimatedPercent = progressInfo.EstimatedPercent,
+                IsIndeterminate = progressInfo.IsIndeterminate,
+                Elapsed = progressInfo.Elapsed
+            };
+
             var rootNode = new StorageItem
             {
                 FullPath = rootDir.FullName,
@@ -79,7 +103,7 @@ public sealed class FileSystemScanner : IFileSystemScanner
                 AttributesToSkip = FileAttributes.ReparsePoint
             };
 
-            void ScanRecursive(DirectoryInfo currentDir, StorageItem currentNode, int depth)
+            void ScanRecursive(DirectoryInfo currentDir, StorageItem currentNode, int depth, double share)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -94,7 +118,10 @@ public sealed class FileSystemScanner : IFileSystemScanner
                     progressInfo.FilesScanned = filesScanned;
                     progressInfo.BytesProcessed = bytesProcessed;
                     progressInfo.Elapsed = stopwatch.Elapsed;
-                    progress?.Report(progressInfo);
+                    // Capped below 100 until the walk actually finishes.
+                    progressInfo.EstimatedPercent = Math.Min(completedShare * 100.0, 99.0);
+                    progressInfo.IsIndeterminate = progressInfo.EstimatedPercent <= 0;
+                    progress?.Report(Snapshot());
                 }
 
                 // 1. Process files in current directory
@@ -136,7 +163,9 @@ public sealed class FileSystemScanner : IFileSystemScanner
                     currentNode.IsInaccessible = true;
                 }
 
-                // 2. Process subdirectories
+                // 2. Collect subdirectories first so this directory's progress share can be
+                //    split evenly among them (see the heuristic note above).
+                var subDirs = new List<DirectoryInfo>();
                 try
                 {
                     foreach (var subDir in currentDir.EnumerateDirectories("*", enumOptions))
@@ -154,6 +183,27 @@ public sealed class FileSystemScanner : IFileSystemScanner
                             continue;
                         }
 
+                        subDirs.Add(subDir);
+                    }
+                }
+                catch (Exception ex) when (ex is UnauthorizedAccessException or SecurityException or PathTooLongException or IOException)
+                {
+                    currentNode.IsInaccessible = true;
+                }
+
+                if (subDirs.Count == 0)
+                {
+                    completedShare += share;
+                }
+
+                // 3. Process subdirectories
+                double childShare = subDirs.Count > 0 ? share / subDirs.Count : 0;
+                try
+                {
+                    foreach (var subDir in subDirs)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         var subNode = new StorageItem
                         {
                             FullPath = subDir.FullName,
@@ -165,7 +215,7 @@ public sealed class FileSystemScanner : IFileSystemScanner
                             Parent = currentNode
                         };
 
-                        ScanRecursive(subDir, subNode, depth + 1);
+                        ScanRecursive(subDir, subNode, depth + 1, childShare);
 
                         currentNode.Children.Add(subNode);
                         currentNode.SizeBytes += subNode.SizeBytes;
@@ -191,7 +241,7 @@ public sealed class FileSystemScanner : IFileSystemScanner
                 currentNode.Children.Sort((a, b) => b.SizeBytes.CompareTo(a.SizeBytes));
             }
 
-            ScanRecursive(rootDir, rootNode, 0);
+            ScanRecursive(rootDir, rootNode, 0, 1.0);
 
             stopwatch.Stop();
             progressInfo.FilesScanned = filesScanned;
@@ -199,7 +249,9 @@ public sealed class FileSystemScanner : IFileSystemScanner
             progressInfo.BytesProcessed = bytesProcessed;
             progressInfo.CurrentPhase = "Analysis complete";
             progressInfo.Elapsed = stopwatch.Elapsed;
-            progress?.Report(progressInfo);
+            progressInfo.EstimatedPercent = 100.0;
+            progressInfo.IsIndeterminate = false;
+            progress?.Report(Snapshot());
 
             _logger?.LogInfo($"Scanned {rootPath}: {filesScanned} files, {dirsScanned} dirs, total {ByteSizeFormatter.Format(rootNode.SizeBytes)} in {stopwatch.Elapsed.TotalSeconds:F2}s");
 
