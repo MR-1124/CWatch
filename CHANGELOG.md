@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Culture-aware byte formatting** (from @adityawaghamare's proposal in [#4](https://github.com/MR-1124/CWatch/issues/4)): `ByteSizeFormatter.Format` accepts an optional `CultureInfo`; `null` keeps the historical invariant output byte-for-byte. Byte counts are formatted invariantly in every locale.
 - **Scan progress percent in the top bar.** The top-bar progress bar now fills with the scan's estimated progress instead of animating indefinitely, and reads 100% when the directory walk finishes. The estimate splits each directory's share evenly among its subdirectories (documented in `FileSystemScanner`); the bar stays indeterminate until there is something to show.
 
 ## [1.1.2] - 2026-09-21
