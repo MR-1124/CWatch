@@ -15,6 +15,7 @@ public sealed class ReportsViewModel : ViewModelBase
     private readonly IStorageAnalyzer _storageAnalyzer;
     private readonly ISnapshotRepository _snapshotRepo;
     private readonly ICleanupEngine _cleanupEngine;
+    private readonly ISettingsService _settingsService;
 
     private StorageReport? _currentReport;
     private string _reportText = "Click 'Generate Report' to create an executive filesystem diagnosis.";
@@ -67,12 +68,14 @@ public sealed class ReportsViewModel : ViewModelBase
         IStorageReportGenerator reportGenerator,
         IStorageAnalyzer storageAnalyzer,
         ISnapshotRepository snapshotRepo,
-        ICleanupEngine cleanupEngine)
+        ICleanupEngine cleanupEngine,
+        ISettingsService settingsService)
     {
         _reportGenerator = reportGenerator;
         _storageAnalyzer = storageAnalyzer;
         _snapshotRepo = snapshotRepo;
         _cleanupEngine = cleanupEngine;
+        _settingsService = settingsService;
 
         GenerateReportCommand = new AsyncRelayCommand(GenerateReportAsync, () => !IsGenerating);
         CopyReportCommand = new RelayCommand(CopyReportToClipboard);
@@ -86,22 +89,23 @@ public sealed class ReportsViewModel : ViewModelBase
 
         try
         {
-            var drive = _storageAnalyzer.GetDriveStatus("C:");
-            var history = await _snapshotRepo.GetAllSnapshotsAsync("C:", 30);
+            string drive = DriveLetters.Normalize(_settingsService.Settings.TargetDriveLetter);
+            var driveStatus = _storageAnalyzer.GetDriveStatus(drive);
+            var history = await _snapshotRepo.GetAllSnapshotsAsync(drive, 30);
             var cleanups = await _cleanupEngine.ScanAllRecommendationsAsync();
 
             var dummyRoot = new StorageItem
             {
-                Name = "C:",
-                SizeBytes = drive.UsedBytes
+                Name = drive,
+                SizeBytes = driveStatus.UsedBytes
             };
 
-            var report = await _reportGenerator.GenerateReportAsync(drive, dummyRoot, history, cleanups);
+            var report = await _reportGenerator.GenerateReportAsync(driveStatus, dummyRoot, history, cleanups);
             CurrentReport = report;
             ReportText = report.SummaryText;
 
             // Calculate overall storage health rating
-            CalculateHealthScore(drive, cleanups);
+            CalculateHealthScore(driveStatus, cleanups);
 
             StatusMessage = "Storage Intelligence Report generated successfully.";
         }
@@ -184,7 +188,7 @@ public sealed class ReportsViewModel : ViewModelBase
 <body>
     <h1>C:Watch Storage Intelligence Report</h1>
     <div class='card'>
-        <h2>Drive Overview (C:)</h2>
+        <h2>Drive Overview ({CurrentReport.DriveStatus.DriveLetter})</h2>
         <div class='metric-grid'>
             <div class='metric-box'><div>TOTAL CAPACITY</div><div class='metric-val'>{ByteSizeFormatter.Format(CurrentReport.DriveStatus.TotalBytes)}</div></div>
             <div class='metric-box'><div>USED ALLOCATION</div><div class='metric-val' style='color:#FF5722;'>{ByteSizeFormatter.Format(CurrentReport.DriveStatus.UsedBytes)} ({CurrentReport.DriveStatus.UsedPercentage:F1}%)</div></div>
@@ -243,6 +247,27 @@ public sealed class SettingsViewModel : ViewModelBase
         set => SetProperty(ref _settings, value);
     }
 
+    /// <summary>
+    /// Fixed, ready volumes offered as scan/monitoring targets in the UI.
+    /// </summary>
+    public IReadOnlyList<string> AvailableDrives { get; }
+
+    public string SelectedDrive
+    {
+        get => DriveLetters.Normalize(Settings.TargetDriveLetter);
+        set
+        {
+            string normalized = DriveLetters.Normalize(value);
+            if (Settings.TargetDriveLetter != normalized)
+            {
+                Settings.TargetDriveLetter = normalized;
+                OnPropertyChanged();
+                StatusMessage = $"Target drive set to {normalized}. New scans, snapshots, and monitoring will follow it.";
+                _ = SaveSettingsAsync();
+            }
+        }
+    }
+
     public string StatusMessage
     {
         get => _statusMessage;
@@ -276,6 +301,22 @@ public sealed class SettingsViewModel : ViewModelBase
         _driveMonitor = driveMonitor;
         _settings = _settingsService.Settings;
 
+        var drives = DriveInfo.GetDrives()
+            .Where(d => d.IsReady && d.DriveType == DriveType.Fixed)
+            .Select(d => DriveLetters.Normalize(d.Name))
+            .Distinct()
+            .OrderBy(d => d, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        // Always offer the configured target even if the volume is not enumerable right now.
+        string configured = DriveLetters.Normalize(_settings.TargetDriveLetter);
+        if (!drives.Contains(configured))
+        {
+            drives.Insert(0, configured);
+        }
+
+        AvailableDrives = drives;
+
         SaveSettingsCommand = new AsyncRelayCommand(SaveSettingsAsync);
         ResetDefaultsCommand = new AsyncRelayCommand(ResetDefaultsAsync);
     }
@@ -306,5 +347,6 @@ public sealed class SettingsViewModel : ViewModelBase
         await _settingsService.SaveSettingsAsync();
         StatusMessage = "Settings restored to defaults.";
         SelectedTheme = Settings.AppTheme;
+        OnPropertyChanged(nameof(SelectedDrive));
     }
 }

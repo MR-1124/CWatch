@@ -10,6 +10,7 @@ public sealed class CleanupEngine : ICleanupEngine
     private readonly List<ICleanupProvider> _providers;
     private readonly IProcessInspector? _processInspector;
     private readonly ISnapshotRepository? _snapshotRepo;
+    private readonly IPathExclusionMatcher? _exclusionMatcher;
     private readonly ILoggerService? _logger;
 
     public IReadOnlyList<ICleanupProvider> Providers => _providers.AsReadOnly();
@@ -17,13 +18,16 @@ public sealed class CleanupEngine : ICleanupEngine
     public CleanupEngine(
         IProcessInspector? processInspector = null,
         ISnapshotRepository? snapshotRepo = null,
-        ILoggerService? logger = null)
+        IPathExclusionMatcher? exclusionMatcher = null,
+        ILoggerService? logger = null,
+        IEnumerable<ICleanupProvider>? providers = null)
     {
         _processInspector = processInspector;
         _snapshotRepo = snapshotRepo;
+        _exclusionMatcher = exclusionMatcher;
         _logger = logger;
 
-        _providers =
+        _providers = providers?.ToList() ??
         [
             new WindowsTempCleanupProvider(),
             new RecycleBinCleanupProvider(),
@@ -31,6 +35,29 @@ public sealed class CleanupEngine : ICleanupEngine
             new DevelopmentCacheCleanupProvider(),
             new ApplicationCacheCleanupProvider()
         ];
+    }
+
+    /// <summary>
+    /// True when the candidate's target path is excluded by user configuration.
+    /// Recycling-bin candidates bypass path exclusion (the shell bin is system-managed).
+    /// </summary>
+    private bool IsExcluded(CleanupCandidate candidate)
+    {
+        if (_exclusionMatcher is null) return false;
+        if (candidate.ProviderId == "recycle_bin") return false;
+        if (string.IsNullOrWhiteSpace(candidate.Path)) return true;
+
+        try
+        {
+            // checkAncestors: a candidate for "D:\Media\cache" must also vanish when the
+            // user excludes "D:\Media".
+            return _exclusionMatcher.IsExcluded(candidate.Path, checkAncestors: true);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning($"Exclusion matcher threw for '{candidate.Path}'; treating as excluded (fail-closed). {ex.Message}");
+            return true; // Cleanup deletes data — fail closed.
+        }
     }
 
     public async Task<List<CleanupCandidate>> ScanAllRecommendationsAsync(
@@ -47,8 +74,15 @@ public sealed class CleanupEngine : ICleanupEngine
             try
             {
                 var candidates = await provider.ScanCandidatesAsync(cancellationToken);
-                // Filter out any candidates failing safety validation defensively
-                allCandidates.AddRange(candidates.Where(c => c.ProviderId == "recycle_bin" || PathSafetyValidator.IsSafeForCleanup(c.Path)));
+
+                // Defense-in-depth filtering: safety validation first, then user exclusions.
+                allCandidates.AddRange(candidates.Where(c =>
+                    (c.ProviderId == "recycle_bin" || PathSafetyValidator.IsSafeForCleanup(c.Path))
+                    && !IsExcluded(c)));
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -72,8 +106,18 @@ public sealed class CleanupEngine : ICleanupEngine
         var safeCandidates = new List<CleanupCandidate>();
         foreach (var cand in selectedCandidates)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (cand.ProviderId == "recycle_bin" || PathSafetyValidator.IsSafeForCleanup(cand.Path))
             {
+                if (IsExcluded(cand))
+                {
+                    _logger?.LogError($"Blocked excluded cleanup candidate targeting: {cand.Path}");
+                    combinedResult.ErrorMessages.Add($"Skipped excluded target path: {cand.Path}");
+                    combinedResult.FailedItemsCount++;
+                    continue;
+                }
+
                 safeCandidates.Add(cand);
             }
             else
@@ -110,6 +154,7 @@ public sealed class CleanupEngine : ICleanupEngine
                     {
                         foreach (var cand in candidatesForProvider)
                         {
+                            cancellationToken.ThrowIfCancellationRequested();
                             await _snapshotRepo.RecordCleanHistoryAsync(new CleanHistoryItem
                             {
                                 ProviderId = provider.ProviderId,
@@ -120,6 +165,10 @@ public sealed class CleanupEngine : ICleanupEngine
                             });
                         }
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {

@@ -131,14 +131,14 @@ public partial class MainWindow : Window
         BtnFinish.Visibility = step == 4 ? Visibility.Visible : Visibility.Collapsed;
         BtnCancel.IsEnabled = step != 3;
 
-        BtnNext.Content = step == 2 ? "INSTALL" : "NEXT →";
+        BtnNext.Content = step == 2 ? "Install" : "Next";
 
         TxtHeaderSubtitle.Text = step switch
         {
-            1 => "Select install destination folder",
-            2 => "Configure shortcuts and startup options",
-            3 => "Installing application binaries...",
-            4 => "Setup completed successfully",
+            1 => "Choose where to install",
+            2 => "Shortcuts and startup",
+            3 => "Installing",
+            4 => "Setup finished",
             _ => "C:Watch Setup"
         };
     }
@@ -319,7 +319,7 @@ public partial class MainWindow : Window
             if (key != null)
             {
                 key.SetValue("DisplayName", "C:Watch Storage Intelligence");
-                key.SetValue("DisplayVersion", "1.0.0");
+                key.SetValue("DisplayVersion", "1.1.0");
                 key.SetValue("Publisher", "MR-1124");
                 key.SetValue("DisplayIcon", Path.Combine(installDir, "Assets", "app.ico"));
                 key.SetValue("UninstallString", $"\"{Path.Combine(installDir, "uninstall.cmd")}\"");

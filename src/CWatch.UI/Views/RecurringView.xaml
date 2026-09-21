@@ -66,7 +66,7 @@
 
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                         <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource AccentAmber}" BorderThickness="1" CornerRadius="3" Padding="6,2" Margin="0,0,8,0">
-                                            <TextBlock Text="RECURRING ACCUMULATION" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentAmber}"/>
+                                            <TextBlock Text="Regrows after cleanup" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentAmber}"/>
                                         </Border>
                                         <TextBlock Text="{Binding DisplayPath}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource TextPrimary}" VerticalAlignment="Center"/>
                                     </StackPanel>
@@ -81,10 +81,10 @@
                                     <TextBlock Text="{Binding Explanation}" Foreground="{DynamicResource TextSecondary}" FontSize="11.5" TextWrapping="Wrap"/>
                                     
                                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                                        <TextBlock Text="CURRENT WEIGHT: " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold"/>
+                                        <TextBlock Text="Current size " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold"/>
                                         <TextBlock Text="{Binding FormattedCurrentSize, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontSize="10.5" Margin="0,0,16,0"/>
                                         
-                                        <TextBlock Text="REGROWN DELTA: " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold"/>
+                                        <TextBlock Text="Regrown " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold"/>
                                         <TextBlock Text="{Binding FormattedRegrown, StringFormat='{}{0} re-accumulated'}" FontWeight="Bold" Foreground="{DynamicResource AccentAmber}" FontSize="10.5"/>
                                     </StackPanel>
                                 </StackPanel>

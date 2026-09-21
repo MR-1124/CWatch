@@ -43,7 +43,7 @@
 
                 <!-- Category Filters -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="CATEGORY: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBlock Text="Category: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                     <Button Content="ALL" Command="{Binding SetCategoryFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
                     <Button Content="DEV / BUILD" Command="{Binding SetCategoryFilterCommand}" CommandParameter="Developer" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
                     <Button Content="APP DATA" Command="{Binding SetCategoryFilterCommand}" CommandParameter="AppData" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
@@ -53,7 +53,7 @@
 
                 <!-- Sorting Controls -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="SORT: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="8,0,6,0"/>
+                    <TextBlock Text="Sort: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="8,0,6,0"/>
                     <Button Content="SIZE ↓" Command="{Binding SetSortCommand}" CommandParameter="SizeDesc" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
                     <Button Content="NAME A-Z" Command="{Binding SetSortCommand}" CommandParameter="NameAsc" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
                     <Button Content="ITEMS ↓" Command="{Binding SetSortCommand}" CommandParameter="ItemsDesc" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5"/>
@@ -97,7 +97,7 @@
                 <!-- Status / Critical Path Pill -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="2" Padding="6,2" Margin="0,0,8,0" Visibility="{Binding IsCurrentPathCritical, Converter={StaticResource BoolToVisibility}}">
-                        <TextBlock Text="SYSTEM CRITICAL" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource AccentAmber}"/>
+                        <TextBlock Text="System critical" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource AccentAmber}"/>
                     </Border>
                     <Border Background="{DynamicResource BgCardNested}" CornerRadius="3" Padding="8,3" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1">
                         <TextBlock Text="{Binding DisplayedItems.Count, StringFormat='{}{0} ITEMS'}" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>

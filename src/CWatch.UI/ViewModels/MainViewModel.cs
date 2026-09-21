@@ -48,6 +48,9 @@ public sealed class MainViewModel : ViewModelBase
         set => SetProperty(ref _driveStatus, value);
     }
 
+    /// <summary>The configured target drive ("X:") that scans, snapshots, and monitoring observe.</summary>
+    public string TargetDrive => DriveLetters.Normalize(_settingsService.Settings.TargetDriveLetter);
+
     public string CurrentThemeMode
     {
         get => _settingsService.Settings.AppTheme;
@@ -128,14 +131,14 @@ public sealed class MainViewModel : ViewModelBase
         _settingsService = settingsService;
         _logger = logger;
 
-        DashboardVM = new DashboardViewModel(storageAnalyzer, snapshotRepo, growthAnalyzer, NavigateTo);
+        DashboardVM = new DashboardViewModel(storageAnalyzer, snapshotRepo, growthAnalyzer, settingsService, NavigateTo);
         ExplorerVM = new ExplorerViewModel(scanner);
         LargestFilesVM = new LargestFilesViewModel(scanner);
         DuplicatesVM = new DuplicatesViewModel(scanner);
-        HistoryVM = new HistoryViewModel(snapshotRepo, growthAnalyzer, trendAnalyzer);
-        RecurringVM = new RecurringViewModel(recurringDetector, snapshotRepo);
+        HistoryVM = new HistoryViewModel(snapshotRepo, growthAnalyzer, trendAnalyzer, settingsService, storageAnalyzer);
+        RecurringVM = new RecurringViewModel(recurringDetector, snapshotRepo, settingsService);
         CleanupVM = new CleanupViewModel(cleanupEngine, snapshotRepo);
-        ReportsVM = new ReportsViewModel(reportGenerator, storageAnalyzer, snapshotRepo, cleanupEngine);
+        ReportsVM = new ReportsViewModel(reportGenerator, storageAnalyzer, snapshotRepo, cleanupEngine, settingsService);
         SettingsVM = new SettingsViewModel(settingsService, driveMonitor);
 
         NavigateCommand = new RelayCommand(param =>
@@ -192,7 +195,18 @@ public sealed class MainViewModel : ViewModelBase
 
         await _snapshotRepo.InitializeAsync();
 
-        DriveStatus = _storageAnalyzer.GetDriveStatus("C:");
+        // Enforce snapshot retention at startup: deletes records older than
+        // Settings.RetentionDays and normalizes DB files that grew unbounded.
+        try
+        {
+            await _snapshotRepo.PruneOldSnapshotsAsync(_settingsService.Settings.RetentionDays);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Startup snapshot pruning failed.", ex);
+        }
+
+        DriveStatus = _storageAnalyzer.GetDriveStatus(TargetDrive);
         await DashboardVM.LoadDashboardDataAsync();
 
         if (_settingsService.Settings.MonitoringEnabled)
@@ -217,12 +231,12 @@ public sealed class MainViewModel : ViewModelBase
 
         try
         {
-            _logger.LogInfo("Starting filesystem scan on C:...");
-            DriveStatus = _storageAnalyzer.GetDriveStatus("C:");
+            string targetDrive = TargetDrive;
+            _logger.LogInfo($"Starting filesystem scan on {targetDrive}...");
+            DriveStatus = _storageAnalyzer.GetDriveStatus(targetDrive);
 
             // 1. Scan user profiles and system directories for fast responsiveness
-            string rootPath = "C:\\Users";
-            if (!Directory.Exists(rootPath)) rootPath = "C:\\";
+            string rootPath = ResolveScanRoot(targetDrive);
 
             var scanned = await _scanner.ScanDirectoryAsync(rootPath, progress, _scanCts.Token);
             _scannedRootItem = scanned;
@@ -240,7 +254,7 @@ public sealed class MainViewModel : ViewModelBase
             // 4. Save snapshot in SQLite
             var snapshot = new StorageSnapshot
             {
-                DriveLetter = "C:",
+                DriveLetter = targetDrive,
                 TotalBytes = DriveStatus.TotalBytes,
                 FreeBytes = DriveStatus.FreeBytes,
                 CategoriesJson = System.Text.Json.JsonSerializer.Serialize(categories),
@@ -271,5 +285,16 @@ public sealed class MainViewModel : ViewModelBase
     public void CancelScan()
     {
         _scanCts?.Cancel();
+    }
+
+    /// <summary>
+    /// Resolves the scan root for a drive: the \Users tree when present (fast, high-signal),
+    /// otherwise the volume root itself.
+    /// </summary>
+    private static string ResolveScanRoot(string driveLetter)
+    {
+        string rootPath = DriveLetters.GetRootPath(driveLetter);
+        string usersDir = Path.Combine(rootPath, "Users");
+        return Directory.Exists(usersDir) ? usersDir : rootPath;
     }
 }

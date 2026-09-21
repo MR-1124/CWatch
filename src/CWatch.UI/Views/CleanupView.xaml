@@ -23,6 +23,7 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                         <Button Content="RESCAN" Command="{Binding ScanCandidatesCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,8,0" Padding="12,6" FontSize="11"/>
+                        <Button Content="✕ CANCEL" Command="{Binding CancelCleanupCommand}" Visibility="{Binding IsCleaning, Converter={StaticResource BoolToVisibility}}" Style="{DynamicResource SecondaryButton}" Margin="0,0,8,0" Padding="12,6" FontSize="11"/>
                         <Button Content="⚡ CLEAN SELECTED SPACE" Command="{Binding RequestCleanSelectedCommand}" Style="{DynamicResource SuccessButton}" Padding="14,6" FontSize="11"/>
                     </StackPanel>
                 </Grid>
@@ -39,7 +40,7 @@
                                 <TextBlock Text="✨ SPACE RECLAIMED SUCCESSFULLY: " FontSize="11" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}"/>
                                 <TextBlock Text="{Binding LastResult.FormattedBytesCleaned}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                             </StackPanel>
-                            <TextBlock Text="{Binding LastResult.FormattedTotalOperations, StringFormat='{}{0} operations completed without errors.'}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding LastResult.ItemsCleanedCount, StringFormat='{}{0} item(s) reclaimed without errors.'}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                         </StackPanel>
                         <Button Grid.Column="1" Content="✕ DISMISS" Command="{Binding DismissCelebrationCommand}" Style="{DynamicResource SecondaryButton}" Padding="8,4" FontSize="9.5"/>
                     </Grid>
@@ -66,14 +67,14 @@
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="SELECTED TO RECLAIM: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                                <TextBlock Text="Selected to reclaim " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
                                 <TextBlock Text="{Binding FormattedTotalSelected, Mode=OneWay}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center" Margin="6,0,0,0"/>
                             </StackPanel>
                         </Grid>
 
                         <!-- Bottom row: Safety Level Filter Chips -->
                         <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="SAFETY LEVEL: " FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock Text="Safety level: " FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                             <Button Content="ALL CANDIDATES" Command="{Binding SetSafetyFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9" Margin="0,0,4,0"/>
                             <Button Content="100% SAFE ONLY" Command="{Binding SetSafetyFilterCommand}" CommandParameter="SafeOnly" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9" Margin="0,0,4,0"/>
                             <Button Content="CAUTION REQUIRED" Command="{Binding SetSafetyFilterCommand}" CommandParameter="ReviewOnly" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9" Margin="0,0,4,0"/>
@@ -139,18 +140,18 @@
                                             </Grid.RowDefinitions>
 
                                             <!-- Path -->
-                                            <TextBlock Grid.Row="0" Text="{Binding TargetPath}" Foreground="{DynamicResource TextMuted}" FontSize="10.5" FontFamily="Consolas, Cascadia Code, monospace"/>
+                                            <TextBlock Grid.Row="0" Text="{Binding Path}" Foreground="{DynamicResource TextMuted}" FontSize="10.5" FontFamily="Consolas, Cascadia Code, monospace"/>
 
                                             <!-- Why safe? -->
                                             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,4,0,0">
-                                                <TextBlock Text="RATIONALE: " FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
-                                                <TextBlock Text="{Binding HumanRationale}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                                <TextBlock Text="Why: " FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                                                <TextBlock Text="{Binding Reason}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                             </StackPanel>
 
                                             <!-- Consequence -->
                                             <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,2,0,0">
-                                                <TextBlock Text="SIDE EFFECT: " FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
-                                                <TextBlock Text="{Binding ConsequenceExplanation}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                                                <TextBlock Text="Side effect: " FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                                                <TextBlock Text="{Binding WhatWillHappen}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
                                             </StackPanel>
                                         </Grid>
                                     </Border>

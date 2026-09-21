@@ -12,6 +12,10 @@ public sealed class HistoryViewModel : ViewModelBase
     private readonly ISnapshotRepository _snapshotRepo;
     private readonly IGrowthAnalyzer _growthAnalyzer;
     private readonly ITrendAnalyzer _trendAnalyzer;
+    private readonly ISettingsService _settingsService;
+    private readonly IStorageAnalyzer _storageAnalyzer;
+
+    private string TargetDrive => DriveLetters.Normalize(_settingsService.Settings.TargetDriveLetter);
 
     private string _selectedTimeRange = "7d";
     private string _growthSummary = "Select a timeframe to inspect storage changes.";
@@ -87,11 +91,15 @@ public sealed class HistoryViewModel : ViewModelBase
     public HistoryViewModel(
         ISnapshotRepository snapshotRepo,
         IGrowthAnalyzer growthAnalyzer,
-        ITrendAnalyzer trendAnalyzer)
+        ITrendAnalyzer trendAnalyzer,
+        ISettingsService settingsService,
+        IStorageAnalyzer storageAnalyzer)
     {
         _snapshotRepo = snapshotRepo;
         _growthAnalyzer = growthAnalyzer;
         _trendAnalyzer = trendAnalyzer;
+        _settingsService = settingsService;
+        _storageAnalyzer = storageAnalyzer;
 
         SelectTimeRangeCommand = new RelayCommand(param =>
         {
@@ -104,25 +112,26 @@ public sealed class HistoryViewModel : ViewModelBase
         });
 
         RefreshCommand = new AsyncRelayCommand(LoadHistoryAsync);
+        RecordSnapshotNowCommand = new AsyncRelayCommand(RecordSnapshotNowAsync);
+    }
 
-        RecordSnapshotNowCommand = new AsyncRelayCommand(async () =>
+    public async Task RecordSnapshotNowAsync()
+    {
+        try
         {
-            try
+            var status = _storageAnalyzer.GetDriveStatus(TargetDrive);
+            var snap = new StorageSnapshot
             {
-                var drive = new DriveInfo("C:");
-                var snap = new StorageSnapshot
-                {
-                    DriveLetter = "C:",
-                    TotalBytes = drive.TotalSize,
-                    FreeBytes = drive.AvailableFreeSpace,
-                    TimestampUtc = DateTime.UtcNow,
-                    Notes = "Manual point-in-time snapshot"
-                };
-                await _snapshotRepo.SaveSnapshotAsync(snap);
-                await LoadHistoryAsync();
-            }
-            catch { }
-        });
+                DriveLetter = status.DriveLetter,
+                TotalBytes = status.TotalBytes,
+                FreeBytes = status.FreeBytes,
+                TimestampUtc = DateTime.UtcNow,
+                Notes = "Manual point-in-time snapshot"
+            };
+            await _snapshotRepo.SaveSnapshotAsync(snap);
+            await LoadHistoryAsync();
+        }
+        catch { }
     }
 
     public async Task LoadHistoryAsync()
@@ -141,10 +150,11 @@ public sealed class HistoryViewModel : ViewModelBase
                 _ => now.AddDays(-7)
             };
 
-            var list = await _snapshotRepo.GetSnapshotsAsync("C:", from, now);
+            string drive = TargetDrive;
+            var list = await _snapshotRepo.GetSnapshotsAsync(drive, from, now);
             if (list.Count == 0)
             {
-                list = await _snapshotRepo.GetAllSnapshotsAsync("C:", 30);
+                list = await _snapshotRepo.GetAllSnapshotsAsync(drive, 30);
             }
 
             Snapshots.Clear();
@@ -166,8 +176,8 @@ public sealed class HistoryViewModel : ViewModelBase
 
                 long netUsed = newest.UsedBytes - oldest.UsedBytes;
                 GrowthSummary = netUsed >= 0
-                    ? $"C: drive gained +{ByteSizeFormatter.Format(netUsed)} across this timeframe."
-                    : $"C: drive freed -{ByteSizeFormatter.Format(-netUsed)} across this timeframe.";
+                    ? $"{drive} drive gained +{ByteSizeFormatter.Format(netUsed)} across this timeframe."
+                    : $"{drive} drive freed -{ByteSizeFormatter.Format(-netUsed)} across this timeframe.";
 
                 var (dailyRate, daysLeft) = _trendAnalyzer.CalculateExhaustionTrend(list, newest.FreeBytes);
                 if (dailyRate > 0)
@@ -222,8 +232,11 @@ public sealed class RecurringViewModel : ViewModelBase
 {
     private readonly IRecurringGrowthDetector _recurringDetector;
     private readonly ISnapshotRepository _snapshotRepo;
+    private readonly ISettingsService _settingsService;
     private bool _isLoading;
     private string _statusMessage = "Analyzing recurring storage patterns...";
+
+    private string TargetDrive => DriveLetters.Normalize(_settingsService.Settings.TargetDriveLetter);
 
     public bool IsLoading
     {
@@ -246,10 +259,12 @@ public sealed class RecurringViewModel : ViewModelBase
 
     public RecurringViewModel(
         IRecurringGrowthDetector recurringDetector,
-        ISnapshotRepository snapshotRepo)
+        ISnapshotRepository snapshotRepo,
+        ISettingsService settingsService)
     {
         _recurringDetector = recurringDetector;
         _snapshotRepo = snapshotRepo;
+        _settingsService = settingsService;
 
         InspectItemCommand = new RelayCommand(param =>
         {
@@ -289,7 +304,7 @@ public sealed class RecurringViewModel : ViewModelBase
         IsLoading = true;
         try
         {
-            var snapshots = await _snapshotRepo.GetAllSnapshotsAsync("C:", 50);
+            var snapshots = await _snapshotRepo.GetAllSnapshotsAsync(TargetDrive, 50);
             var history = await _snapshotRepo.GetCleanHistoryAsync(50);
             var detected = await _recurringDetector.DetectRecurringGrowthAsync(snapshots, history);
 

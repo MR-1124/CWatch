@@ -42,7 +42,7 @@
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Border Width="6" Height="6" CornerRadius="3" Background="{DynamicResource AccentOrange}" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="STORAGE GROWTH VELOCITY: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Text="Growth rate: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
                             <TextBlock Text="{Binding BurnRateSummary}" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}"/>
                         </StackPanel>
                         <TextBlock Text="{Binding GrowthSummary}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" Margin="0,4,0,0"/>
@@ -51,7 +51,7 @@
                     <!-- Right: Runout Forecast -->
                     <Border Grid.Column="2" Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="10,8">
                         <StackPanel>
-                            <TextBlock Text="CAPACITY EXHAUSTION FORECAST" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                            <TextBlock Text="Projected full by" FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
                             <TextBlock Text="{Binding RunoutForecast}" FontWeight="Bold" FontSize="11.5" Foreground="{DynamicResource AccentGreen}" Margin="0,2,0,0"/>
                         </StackPanel>
                     </Border>
@@ -68,7 +68,7 @@
                 <TextBlock Text="DIFFERENTIAL GROWTH DELTAS (WHAT EXPANDED?)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="FILTER: " FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBlock Text="Filter: " FontSize="8.5" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                     <Button Content="ALL DELTAS" Command="{Binding SetDeltaFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9" Margin="0,0,4,0"/>
                     <Button Content="GROWTH ONLY" Command="{Binding SetDeltaFilterCommand}" CommandParameter="GrowthOnly" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9" Margin="0,0,4,0"/>
                     <Button Content="FREED ONLY" Command="{Binding SetDeltaFilterCommand}" CommandParameter="FreedOnly" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9"/>
@@ -125,7 +125,7 @@
             </Border>
 
             <!-- Snapshots History Table Section -->
-            <TextBlock Text="RECORDED VOLUME SNAPSHOTS (SQLITE ARCHIVE)" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
+            <TextBlock Text="Snapshots on record" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,8"/>
 
             <Border Style="{DynamicResource CardBorder}" Padding="0">
                 <Grid>

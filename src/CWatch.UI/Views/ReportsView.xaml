@@ -43,20 +43,16 @@
 
                 <Border Grid.Column="0" Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="4" Padding="12,6" Margin="0,0,14,0" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="HEALTH SCORE: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                        <TextBlock Text="Health " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding HealthScore, StringFormat='{}{0}/100'}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding HealthRating, StringFormat='SYSTEM STORAGE STATUS: {0}'}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                    <TextBlock Text="{Binding HealthRating, StringFormat='Storage status: {0}'}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
                     <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource TextSecondary}" Margin="0,2,0,0"/>
                 </StackPanel>
 
-                <!-- Key Takeaway Pill -->
-                <Border Grid.Column="2" Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource BorderSubtle}" BorderThickness="1" CornerRadius="3" Padding="8,4" VerticalAlignment="Center">
-                    <TextBlock Text="AUDIT: PASS" FontSize="9.5" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}"/>
-                </Border>
             </Grid>
         </Border>
 
@@ -72,7 +68,7 @@
             <!-- Total Capacity -->
             <Border Grid.Column="0" Style="{DynamicResource CardBorder}" Margin="0,0,6,0" Padding="14,10">
                 <StackPanel>
-                    <TextBlock Text="TOTAL CAPACITY" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                    <TextBlock Text="Total capacity" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
                     <TextBlock Text="{Binding CurrentReport.DriveStatus.TotalBytes, Converter={StaticResource SizeFormatter}}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
@@ -80,7 +76,7 @@
             <!-- Used Space -->
             <Border Grid.Column="1" Style="{DynamicResource CardBorder}" Margin="3,0,3,0" Padding="14,10">
                 <StackPanel>
-                    <TextBlock Text="USED ALLOCATION" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                    <TextBlock Text="Used" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
                     <TextBlock Text="{Binding CurrentReport.DriveStatus.UsedBytes, Converter={StaticResource SizeFormatter}}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
@@ -88,7 +84,7 @@
             <!-- Free Space -->
             <Border Grid.Column="2" Style="{DynamicResource CardBorder}" Margin="3,0,3,0" Padding="14,10">
                 <StackPanel>
-                    <TextBlock Text="AVAILABLE SPACE" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
+                    <TextBlock Text="Free" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}"/>
                     <TextBlock Text="{Binding CurrentReport.DriveStatus.FreeBytes, Converter={StaticResource SizeFormatter}}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>
@@ -96,7 +92,7 @@
             <!-- Reclaimable -->
             <Border Grid.Column="3" Style="{DynamicResource CardBorder}" Margin="6,0,0,0" Padding="14,10" BorderBrush="{DynamicResource AccentGreen}">
                 <StackPanel>
-                    <TextBlock Text="SAFELY RECOVERABLE" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}"/>
+                    <TextBlock Text="Safely reclaimable" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}"/>
                     <TextBlock Text="{Binding CurrentReport.FormattedRecommendedCleanup}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource AccentGreen}" Margin="0,4,0,0"/>
                 </StackPanel>
             </Border>

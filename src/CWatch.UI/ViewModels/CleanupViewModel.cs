@@ -76,6 +76,8 @@ public sealed class CleanupViewModel : ViewModelBase
         set => SetProperty(ref _currentCleaningProgress, value);
     }
 
+    private CancellationTokenSource? _cleanupCts;
+
     public CleanupResult? LastResult
     {
         get => _lastResult;
@@ -95,6 +97,7 @@ public sealed class CleanupViewModel : ViewModelBase
     public ICommand ScanCandidatesCommand { get; }
     public ICommand RequestCleanSelectedCommand { get; }
     public ICommand ConfirmCleanCommand { get; }
+    public ICommand CancelCleanupCommand { get; }
     public ICommand CancelConfirmationCommand { get; }
     public ICommand SelectAllSafeCommand { get; }
     public ICommand DeselectAllCommand { get; }
@@ -112,6 +115,7 @@ public sealed class CleanupViewModel : ViewModelBase
         ScanCandidatesCommand = new AsyncRelayCommand(ScanForRecommendationsAsync, () => !IsScanning && !IsCleaning);
         RequestCleanSelectedCommand = new RelayCommand(OpenConfirmationModal, () => Candidates.Any(c => c.IsSelected) && !IsCleaning);
         ConfirmCleanCommand = new AsyncRelayCommand(ExecuteSelectedCleanupAsync, () => !IsCleaning);
+        CancelCleanupCommand = new RelayCommand(() => _cleanupCts?.Cancel(), () => IsCleaning);
         CancelConfirmationCommand = new RelayCommand(() => ShowConfirmationModal = false);
         DismissCelebrationCommand = new RelayCommand(() => LastResult = null);
 
@@ -216,15 +220,20 @@ public sealed class CleanupViewModel : ViewModelBase
         var selected = _allCandidates.Where(c => c.IsSelected).ToList();
         var progress = new Progress<string>(msg => CurrentCleaningProgress = msg);
 
+        _cleanupCts = new CancellationTokenSource();
         try
         {
-            var result = await _cleanupEngine.ExecuteCleanupAsync(selected, progress);
+            var result = await _cleanupEngine.ExecuteCleanupAsync(selected, progress, _cleanupCts.Token);
             LastResult = result;
 
             StatusMessage = $"Successfully freed {result.FormattedBytesCleaned} disk space across {result.ItemsCleanedCount} location(s)!";
 
             // Refresh candidate list after cleaning
             await ScanForRecommendationsAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Cleanup cancelled. Already-deleted items were reclaimed; remaining targets were skipped.";
         }
         catch (Exception ex)
         {
@@ -233,6 +242,7 @@ public sealed class CleanupViewModel : ViewModelBase
         finally
         {
             IsCleaning = false;
+            _cleanupCts = null;
             CurrentCleaningProgress = string.Empty;
         }
     }

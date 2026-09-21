@@ -42,7 +42,7 @@
 
                 <!-- Type Filters -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="TYPE: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBlock Text="Type: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                     <Button Content="ALL" Command="{Binding SetTypeFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
                     <Button Content="VIDEOS / MEDIA" Command="{Binding SetTypeFilterCommand}" CommandParameter="Media" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
                     <Button Content="ARCHIVES &amp; ISOS" Command="{Binding SetTypeFilterCommand}" CommandParameter="Archives" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
@@ -52,7 +52,7 @@
 
                 <!-- Min Size Filters -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="MIN SIZE: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="8,0,6,0"/>
+                    <TextBlock Text="Min size: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="8,0,6,0"/>
                     <Button Content="ALL" Command="{Binding SetMinSizeFilterCommand}" CommandParameter="All" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
                     <Button Content="> 10 GB" Command="{Binding SetMinSizeFilterCommand}" CommandParameter=">10GB" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>
                     <Button Content="> 1 GB" Command="{Binding SetMinSizeFilterCommand}" CommandParameter=">1GB" Style="{DynamicResource SecondaryButton}" Padding="6,2" FontSize="9.5" Margin="0,0,4,0"/>

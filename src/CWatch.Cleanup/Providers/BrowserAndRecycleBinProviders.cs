@@ -18,27 +18,42 @@ public sealed class RecycleBinCleanupProvider : ICleanupProvider
         return await Task.Run(() =>
         {
             var candidates = new List<CleanupCandidate>();
-            var rbInfo = new NativeMethods.SHQUERYRBINFO
-            {
-                cbSize = System.Runtime.InteropServices.Marshal.SizeOf<NativeMethods.SHQUERYRBINFO>()
-            };
 
-            int hr = NativeMethods.SHQueryRecycleBin("C:\\", ref rbInfo);
-            if (hr == 0 && rbInfo.i64Size > 0)
+            // Enumerate every ready local volume so recycle bins on non-system drives are covered too.
+            foreach (var drive in DriveInfo.GetDrives())
             {
-                candidates.Add(new CleanupCandidate
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!drive.IsReady || (drive.DriveType != DriveType.Fixed && drive.DriveType != DriveType.Removable))
                 {
-                    ProviderId = ProviderId,
-                    Title = "Recycle Bin (C: Drive)",
-                    Description = $"{rbInfo.i64NumItems:N0} deleted file(s) currently held in the Recycle Bin.",
-                    Path = @"C:\$Recycle.Bin",
-                    SizeBytes = rbInfo.i64Size,
-                    Safety = SafetyLevel.Safe,
-                    Reason = "Files and folders you previously deleted that are stored in the Recycle Bin.",
-                    WhatWillHappen = "Permanently deletes all items in the Recycle Bin, freeing immediate disk space.",
-                    WillRegenerate = false,
-                    Category = StorageCategoryType.RecycleBin
-                });
+                    continue;
+                }
+
+                string rootPath = drive.Name; // "X:\\"
+                string driveLabel = rootPath.TrimEnd('\\');
+
+                var rbInfo = new NativeMethods.SHQUERYRBINFO
+                {
+                    cbSize = System.Runtime.InteropServices.Marshal.SizeOf<NativeMethods.SHQUERYRBINFO>()
+                };
+
+                int hr = NativeMethods.SHQueryRecycleBin(rootPath, ref rbInfo);
+                if (hr == 0 && rbInfo.i64Size > 0)
+                {
+                    candidates.Add(new CleanupCandidate
+                    {
+                        ProviderId = ProviderId,
+                        Title = $"Recycle Bin ({driveLabel})",
+                        Description = $"{rbInfo.i64NumItems:N0} deleted file(s) currently held in the {driveLabel} Recycle Bin.",
+                        Path = Path.Combine(rootPath, "$Recycle.Bin"),
+                        SizeBytes = rbInfo.i64Size,
+                        Safety = SafetyLevel.Safe,
+                        Reason = "Files and folders you previously deleted that are stored in the Recycle Bin.",
+                        WhatWillHappen = "Permanently deletes all items in the Recycle Bin, freeing immediate disk space.",
+                        WillRegenerate = false,
+                        Category = StorageCategoryType.RecycleBin
+                    });
+                }
             }
 
             return candidates;
@@ -55,33 +70,47 @@ public sealed class RecycleBinCleanupProvider : ICleanupProvider
             var result = new CleanupResult();
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
-            progress?.Report("Emptying Recycle Bin...");
-            long totalBytes = candidates.Sum(c => c.SizeBytes);
+            // Empty the recycle bin of every drive represented by the selected candidates.
+            var driveRoots = candidates
+                .Select(c => Path.GetPathRoot(c.Path))
+                .Where(root => !string.IsNullOrEmpty(root))
+                .Select(root => root!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
 
-            try
+            foreach (var driveRoot in driveRoots)
             {
-                int hr = NativeMethods.SHEmptyRecycleBin(
-                    IntPtr.Zero,
-                    "C:\\",
-                    NativeMethods.RecycleFlags.SHERB_NOCONFIRMATION |
-                    NativeMethods.RecycleFlags.SHERB_NOPROGRESSUI |
-                    NativeMethods.RecycleFlags.SHERB_NOSOUND);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                if (hr == 0)
+                progress?.Report($"Emptying Recycle Bin ({driveRoot.TrimEnd('\\')})...");
+
+                try
                 {
-                    result.BytesCleaned = totalBytes;
-                    result.ItemsCleanedCount = 1;
+                    int hr = NativeMethods.SHEmptyRecycleBin(
+                        IntPtr.Zero,
+                        driveRoot,
+                        NativeMethods.RecycleFlags.SHERB_NOCONFIRMATION |
+                        NativeMethods.RecycleFlags.SHERB_NOPROGRESSUI |
+                        NativeMethods.RecycleFlags.SHERB_NOSOUND);
+
+                    if (hr == 0)
+                    {
+                        result.BytesCleaned += candidates
+                            .Where(c => string.Equals(Path.GetPathRoot(c.Path), driveRoot, StringComparison.OrdinalIgnoreCase))
+                            .Sum(c => c.SizeBytes);
+                        result.ItemsCleanedCount++;
+                    }
+                    else
+                    {
+                        result.Success = false;
+                        result.ErrorMessages.Add($"Recycle Bin API returned error code 0x{hr:X8} for {driveRoot}");
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
                     result.Success = false;
-                    result.ErrorMessages.Add($"Recycle Bin API returned error code 0x{hr:X8}");
+                    result.ErrorMessages.Add($"{driveRoot}: {ex.Message}");
                 }
-            }
-            catch (Exception ex)
-            {
-                result.Success = false;
-                result.ErrorMessages.Add(ex.Message);
             }
 
             sw.Stop();

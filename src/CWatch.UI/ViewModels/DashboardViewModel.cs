@@ -12,6 +12,7 @@ public sealed class DashboardViewModel : ViewModelBase
     private readonly IStorageAnalyzer _storageAnalyzer;
     private readonly ISnapshotRepository _snapshotRepo;
     private readonly IGrowthAnalyzer _growthAnalyzer;
+    private readonly ISettingsService _settingsService;
     private readonly Action<string> _navigateTo;
 
     private DriveStatus _driveStatus = new();
@@ -69,11 +70,13 @@ public sealed class DashboardViewModel : ViewModelBase
         IStorageAnalyzer storageAnalyzer,
         ISnapshotRepository snapshotRepo,
         IGrowthAnalyzer growthAnalyzer,
+        ISettingsService settingsService,
         Action<string> navigateTo)
     {
         _storageAnalyzer = storageAnalyzer;
         _snapshotRepo = snapshotRepo;
         _growthAnalyzer = growthAnalyzer;
+        _settingsService = settingsService;
         _navigateTo = navigateTo;
 
         InvestigateGrowthCommand = new RelayCommand(() => _navigateTo("History"));
@@ -87,13 +90,14 @@ public sealed class DashboardViewModel : ViewModelBase
         IsLoading = true;
         try
         {
-            DriveStatus = _storageAnalyzer.GetDriveStatus("C:");
+            string drive = DriveLetters.Normalize(_settingsService.Settings.TargetDriveLetter);
+            DriveStatus = _storageAnalyzer.GetDriveStatus(drive);
 
             // Emergency check (< 10GB free)
             if (DriveStatus.IsCriticallyLow(10L * 1024 * 1024 * 1024))
             {
                 HasEmergencyAlert = true;
-                EmergencyMessage = $"🔴 C: DRIVE CRITICALLY LOW: Only {ByteSizeFormatter.Format(DriveStatus.FreeBytes)} remaining! Immediate cleanup recommended.";
+                EmergencyMessage = $"🔴 {DriveStatus.DriveLetter} DRIVE CRITICALLY LOW: Only {ByteSizeFormatter.Format(DriveStatus.FreeBytes)} remaining! Immediate cleanup recommended.";
             }
             else if (DriveStatus.IsWarningLow(25L * 1024 * 1024 * 1024))
             {
@@ -107,7 +111,7 @@ public sealed class DashboardViewModel : ViewModelBase
             }
 
             // Load recent history to calculate 3-day / 7-day trend
-            var snapshots = await _snapshotRepo.GetAllSnapshotsAsync("C:", 14);
+            var snapshots = await _snapshotRepo.GetAllSnapshotsAsync(drive, 14);
             RecentSnapshots.Clear();
             foreach (var s in snapshots) RecentSnapshots.Add(s);
 
@@ -137,12 +141,12 @@ public sealed class DashboardViewModel : ViewModelBase
                 {
                     if (netUsedChange > 0)
                     {
-                        TrendMessage = $"📈 C: has gained {ByteSizeFormatter.Format(netUsedChange)} in the last {days:F0} days";
+                        TrendMessage = $"📈 {DriveStatus.DriveLetter} has gained {ByteSizeFormatter.Format(netUsedChange)} in the last {days:F0} days";
                         TrendState = GrowthTrend.ModerateGrowth;
                     }
                     else if (netUsedChange < 0)
                     {
-                        TrendMessage = $"📉 C: has freed {ByteSizeFormatter.Format(-netUsedChange)} in the last {days:F0} days";
+                        TrendMessage = $"📉 {DriveStatus.DriveLetter} has freed {ByteSizeFormatter.Format(-netUsedChange)} in the last {days:F0} days";
                         TrendState = GrowthTrend.SpaceFreed;
                     }
                     else
@@ -154,7 +158,7 @@ public sealed class DashboardViewModel : ViewModelBase
             }
             else
             {
-                TrendMessage = "Monitoring C: storage changes over time";
+                TrendMessage = $"Monitoring {DriveStatus.DriveLetter} storage changes over time";
                 TrendState = GrowthTrend.Stable;
             }
         }

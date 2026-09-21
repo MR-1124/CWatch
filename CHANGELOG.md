@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Multi-Drive Support**: New Target Drive selector in Settings drives all scanning, snapshots, background monitoring, trends, and reports. Recycle Bin cleanup now enumerates every ready local volume instead of only C:.
+- **Dependency Injection**: Application composition moved to `Microsoft.Extensions.DependencyInjection` (`AppComposition.BuildServices`) with a test-override callback; ViewModels and services are now resolvable and unit-testable. The test suite references the full UI project and asserts the composition graph.
+- **Hardened Path Safety**: `PathSafetyValidator` now rejects descendants of protected subtrees (Program Files, Windows, ProgramData, personal libraries), 8.3 short-name aliases (C:\PROGRA~1), Win32 trailing dot/space evasion, UNC/device paths, and junction/symlink cleanup targets - with a sanctioned carve-out for `Windows\Temp`. 8.3 aliases of protected roots are pre-registered via GetShortPathName.
+
+### Added
+- **Excluded Paths Enforcement**: `AppSettings.ExcludedPaths` (glob patterns, `**` recursive) is now actually enforced — previously the setting was read but ignored. `FileSystemScanner` skips excluded directories and files in all three scan modes; `CleanupEngine` filters candidates out of recommendations and re-validates before every execution step (defense-in-depth against settings changing between scan and execute).
+- **Cancellable Long Operations**: The Duplicate Finder and Cleanup Engine now accept `CancellationToken`s, and both pages have working Cancel buttons that stop the operation mid-run.
+- **Storage Explorer O(1) Breadcrumbs**: `StorageItem` gained a `Parent` back-reference populated during scanning; `ExplorerViewModel` no longer walks the whole tree per breadcrumb update.
+
+### Changed
+- **Installer redesign**: `CWatch.Installer` now uses the same "pressure gauge" tokens, type scale, button styles, and sentence-case copy as the main app.
+- **Automatic snapshot pruning**: `PruneOldSnapshotsAsync` now runs at startup and after every recorded snapshot, honoring `Settings.RetentionDays` (previously defined but never called).
+- **SQLite schema versioning**: `DatabaseManager` tracks `PRAGMA user_version` with a migration chain. Future schema changes upgrade existing databases; databases from newer app versions are rejected instead of silently corrupted. Legacy pre-versioning databases (version 0) are adopted automatically.
+- **Visual redesign - "pressure gauge" instrument system**: tuned ink/mist palette with a single pressure-signal orange (`#F2632B` family, light-theme variant deepened), Segoe UI Variable type scale with tabular figures, radius-as-hierarchy (cards 6 / controls 4 / chips 2), Segoe Fluent/MDL2 vector icons replacing emoji, sentence-case copy across all nine pages, segmented capacity bar with 90% red line and state-colored fill, theme-aware growth-delta chips, keyboard focus rings on all interactive controls, and safety colors now paired with a colored rule (never color alone). Removed the decorative "Audit: pass" pill and hard-coded hex colors in value converters (they broke the light theme).
+- `CategoryClassifier` classifies volume-root anchors (Windows, Program Files, ProgramData, Users) on any drive letter, not just C:.
+- WPF drive labels (sidebar pill, telemetry bar, dashboard identity) are bound to the live `DriveStatus` instead of hardcoded text.
+
+---
+
 ## [1.0.1] - 2026-08-30
 
 ### Fixed & Refined

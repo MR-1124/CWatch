@@ -313,6 +313,7 @@ public sealed class DuplicatesViewModel : ViewModelBase
     public ObservableCollection<DuplicateGroupItem> DuplicateGroups { get; } = [];
 
     public ICommand StartScanCommand { get; }
+    public ICommand CancelScanCommand { get; }
     public ICommand DeleteSelectedDuplicatesCommand { get; }
     public ICommand ShowInExplorerCommand { get; }
     public ICommand KeepNewestCopiesCommand { get; }
@@ -321,11 +322,14 @@ public sealed class DuplicatesViewModel : ViewModelBase
     public ICommand DeselectAllDuplicatesCommand { get; }
     public ICommand SetScanTargetCommand { get; }
 
+    private CancellationTokenSource? _scanCts;
+
     public DuplicatesViewModel(IFileSystemScanner scanner)
     {
         _scanner = scanner;
 
         StartScanCommand = new AsyncRelayCommand(ScanDuplicatesAsync, () => !IsScanning);
+        CancelScanCommand = new RelayCommand(() => _scanCts?.Cancel(), () => IsScanning);
         DeleteSelectedDuplicatesCommand = new RelayCommand(DeleteSelected, () => DuplicateGroups.Count > 0);
         ShowInExplorerCommand = new RelayCommand(param =>
         {
@@ -422,8 +426,18 @@ public sealed class DuplicatesViewModel : ViewModelBase
 
             if (!Directory.Exists(scanPath)) scanPath = userProfile;
 
+            _scanCts = new CancellationTokenSource();
             CurrentPhase = $"Scanning: {scanPath}";
-            var results = await _scanner.FindDuplicateFilesAsync(scanPath);
+            List<List<StorageItem>> results;
+            try
+            {
+                results = await _scanner.FindDuplicateFilesAsync(scanPath, cancellationToken: _scanCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                StatusMessage = "Duplicate scan cancelled.";
+                return;
+            }
 
             long wasted = 0;
             foreach (var group in results)
@@ -455,6 +469,10 @@ public sealed class DuplicatesViewModel : ViewModelBase
                 ? $"Found {DuplicateGroups.Count} duplicate groups ({ByteSizeFormatter.Format(wasted)} reclaimable)."
                 : "No duplicate files found in selected directory. Everything is clean!";
         }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Duplicate scan cancelled.";
+        }
         catch (Exception ex)
         {
             StatusMessage = $"Scan error: {ex.Message}";
@@ -462,6 +480,7 @@ public sealed class DuplicatesViewModel : ViewModelBase
         finally
         {
             IsScanning = false;
+            _scanCts = null;
             CurrentPhase = string.Empty;
         }
     }

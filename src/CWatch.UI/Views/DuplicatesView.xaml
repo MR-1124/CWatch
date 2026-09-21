@@ -26,10 +26,11 @@
 
             <!-- Actions & Scan Scope -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="SCOPE: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <TextBlock Text="Folder: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center" Margin="0,0,6,0"/>
                 <Button Content="USER PROFILE" Command="{Binding SetScanTargetCommand}" CommandParameter="UserProfile" Style="{DynamicResource SecondaryButton}" Padding="6,4" FontSize="9.5" Margin="0,0,4,0"/>
                 <Button Content="DOWNLOADS" Command="{Binding SetScanTargetCommand}" CommandParameter="Downloads" Style="{DynamicResource SecondaryButton}" Padding="6,4" FontSize="9.5" Margin="0,0,8,0"/>
                 <Button Content="⚡ SCAN DUPLICATES" Command="{Binding StartScanCommand}" Style="{DynamicResource ModernButton}" Margin="0,0,8,0" Padding="12,6" FontSize="11"/>
+                <Button Content="✕ CANCEL SCAN" Command="{Binding CancelScanCommand}" Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibility}}" Style="{DynamicResource SecondaryButton}" Margin="0,0,8,0" Padding="12,6" FontSize="11"/>
                 <Button Content="🗑 DELETE TO RECYCLE BIN" Command="{Binding DeleteSelectedDuplicatesCommand}" Style="{DynamicResource DangerButton}" Padding="12,6" FontSize="11"/>
             </StackPanel>
         </Grid>
@@ -45,7 +46,7 @@
                 <!-- Left: Status & Reclaimable Metric -->
                 <StackPanel VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,3">
-                        <TextBlock Text="RECLAIMABLE REDUNDANT SPACE: " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                        <TextBlock Text="Redundant space " FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding FormattedWastedBytes}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}" VerticalAlignment="Center" Margin="4,0,0,0"/>
                     </StackPanel>
                     <TextBlock Text="{Binding StatusMessage}" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
@@ -87,12 +88,12 @@
                                             <Border Background="{DynamicResource AccentOrange}" CornerRadius="2" Padding="6,2" Margin="0,0,8,0">
                                                 <TextBlock Text="{Binding Files.Count, StringFormat='{}{0} IDENTICAL COPIES'}" FontSize="9" FontWeight="Bold" Foreground="White"/>
                                             </Border>
-                                            <TextBlock Text="INDIVIDUAL SIZE: " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Each copy " Foreground="{DynamicResource TextMuted}" FontSize="10" FontWeight="Bold" VerticalAlignment="Center"/>
                                             <TextBlock Text="{Binding FormattedSize, Mode=OneWay}" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}" FontSize="11" VerticalAlignment="Center"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                            <TextBlock Text="REDUNDANT WEIGHT: " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
+                                            <TextBlock Text="Reclaimable " FontSize="9" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
                                             <TextBlock Text="{Binding FormattedWastedInGroup}" FontSize="10.5" FontWeight="Bold" Foreground="{DynamicResource AccentOrange}" VerticalAlignment="Center"/>
                                         </StackPanel>
                                     </Grid>

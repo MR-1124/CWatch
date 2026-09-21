@@ -20,6 +20,15 @@ public sealed class StorageItem
     public bool IsInaccessible { get; set; }
     public string? ParentPath { get; set; }
     public double RelativePercentage { get; set; }
+
+    /// <summary>
+    /// Back-reference to the containing directory node. Populated by the scanner during a
+    /// live scan; deserialized snapshots carry <see cref="ParentPath"/> only.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [System.Xml.Serialization.XmlIgnore]
+    public StorageItem? Parent { get; set; }
+
     public List<StorageItem> Children { get; set; } = [];
 
     public string DisplaySize { get => ByteSizeFormatter.Format(SizeBytes); set { } }

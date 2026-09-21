@@ -49,7 +49,7 @@ public static class CategoryClassifier
         }
 
         // Windows System Files
-        if (normalized.StartsWith(@"C:\Windows", StringComparison.OrdinalIgnoreCase) ||
+        if (StartsWithVolumeRoot(normalized, "Windows") ||
             normalized.StartsWith(@"C:\$WinREAgent", StringComparison.OrdinalIgnoreCase) ||
             normalized.StartsWith(@"C:\System Volume Information", StringComparison.OrdinalIgnoreCase) ||
             normalized.StartsWith(@"C:\Recovery", StringComparison.OrdinalIgnoreCase) ||
@@ -117,8 +117,8 @@ public static class CategoryClassifier
         }
 
         // Installed Applications
-        if (normalized.StartsWith(@"C:\Program Files (x86)", StringComparison.OrdinalIgnoreCase) ||
-            normalized.StartsWith(@"C:\Program Files", StringComparison.OrdinalIgnoreCase) ||
+        if (StartsWithVolumeRoot(normalized, "Program Files (x86)") ||
+            StartsWithVolumeRoot(normalized, "Program Files") ||
             normalized.Contains(@"\AppData\Local\Programs", StringComparison.OrdinalIgnoreCase) ||
             normalized.Contains(@"\ProgramData\Microsoft\Windows\AppRepository", StringComparison.OrdinalIgnoreCase))
         {
@@ -126,7 +126,7 @@ public static class CategoryClassifier
         }
 
         // ProgramData (general)
-        if (normalized.StartsWith(@"C:\ProgramData", StringComparison.OrdinalIgnoreCase))
+        if (StartsWithVolumeRoot(normalized, "ProgramData"))
         {
             return StorageCategoryType.ProgramData;
         }
@@ -156,12 +156,24 @@ public static class CategoryClassifier
         {
             return StorageCategoryType.AppData;
         }
-        if (normalized.StartsWith(@"C:\Users\", StringComparison.OrdinalIgnoreCase))
+        if (StartsWithVolumeRoot(normalized, "Users"))
         {
             return StorageCategoryType.UserFiles;
         }
 
         return StorageCategoryType.Other;
+    }
+
+    /// <summary>
+    /// Matches "X:\<rootName>" (with a path boundary or end) for any drive letter X.
+    /// </summary>
+    private static bool StartsWithVolumeRoot(string normalized, string rootName)
+    {
+        if (normalized.Length < rootName.Length + 3) return false;
+        if (!char.IsAsciiLetter(normalized[0]) || normalized[1] != ':' || normalized[2] != '\\') return false;
+
+        return string.Compare(normalized, 3, rootName, 0, rootName.Length, StringComparison.OrdinalIgnoreCase) == 0
+            && (normalized.Length == rootName.Length + 3 || normalized[rootName.Length + 3] == '\\');
     }
 
     public static string GetCategoryDisplayName(StorageCategoryType type) => type switch

@@ -3,16 +3,38 @@ using System.Security.Cryptography;
 using CWatch.Analysis.Classifiers;
 using CWatch.Core.Interfaces;
 using CWatch.Core.Models;
+using CWatch.Core.Safety;
 
 namespace CWatch.Analysis.Scanning;
 
 public sealed class FileSystemScanner : IFileSystemScanner
 {
     private readonly ILoggerService? _logger;
+    private readonly IPathExclusionMatcher? _exclusionMatcher;
 
-    public FileSystemScanner(ILoggerService? logger = null)
+    public FileSystemScanner(ILoggerService? logger = null, IPathExclusionMatcher? exclusionMatcher = null)
     {
         _logger = logger;
+        _exclusionMatcher = exclusionMatcher;
+    }
+
+    /// <summary>
+    /// Returns true when the given path is excluded by the configured exclusion patterns.
+    /// Fail-open on matcher errors would defeat the user's privacy/perf intent for scans,
+    /// so any exception is logged and treated as "not excluded" (scan safety is not at stake).
+    /// </summary>
+    private bool IsExcluded(string path, bool checkAncestors = false)
+    {
+        if (_exclusionMatcher is null) return false;
+        try
+        {
+            return _exclusionMatcher.IsExcluded(path, checkAncestors);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning($"Exclusion matcher threw for '{path}'; treating as included. {ex.Message}");
+            return false;
+        }
     }
 
     public async Task<StorageItem> ScanDirectoryAsync(
@@ -81,6 +103,12 @@ public sealed class FileSystemScanner : IFileSystemScanner
                     foreach (var file in currentDir.EnumerateFiles("*", enumOptions))
                     {
                         cancellationToken.ThrowIfCancellationRequested();
+
+                        if (IsExcluded(file.FullName))
+                        {
+                            continue;
+                        }
+
                         filesScanned++;
                         long size = file.Length;
                         bytesProcessed += size;
@@ -94,7 +122,8 @@ public sealed class FileSystemScanner : IFileSystemScanner
                             Category = CategoryClassifier.Classify(file.FullName, false),
                             LastModifiedUtc = file.LastWriteTimeUtc,
                             Extension = file.Extension,
-                            ParentPath = currentDir.FullName
+                            ParentPath = currentDir.FullName,
+                            Parent = currentNode
                         };
 
                         currentNode.Children.Add(fileNode);
@@ -120,6 +149,11 @@ public sealed class FileSystemScanner : IFileSystemScanner
                             continue;
                         }
 
+                        if (IsExcluded(subDir.FullName))
+                        {
+                            continue;
+                        }
+
                         var subNode = new StorageItem
                         {
                             FullPath = subDir.FullName,
@@ -127,7 +161,8 @@ public sealed class FileSystemScanner : IFileSystemScanner
                             IsDirectory = true,
                             Category = CategoryClassifier.Classify(subDir.FullName, true),
                             LastModifiedUtc = subDir.LastWriteTimeUtc,
-                            ParentPath = currentDir.FullName
+                            ParentPath = currentDir.FullName,
+                            Parent = currentNode
                         };
 
                         ScanRecursive(subDir, subNode, depth + 1);
@@ -207,6 +242,14 @@ public sealed class FileSystemScanner : IFileSystemScanner
                 foreach (var file in rootDir.EnumerateFiles("*", enumOptions))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
+                    // Recursive enumeration never visits directory nodes, so files living
+                    // under excluded directories are caught via ancestor evaluation.
+                    if (IsExcluded(file.FullName, checkAncestors: true))
+                    {
+                        continue;
+                    }
+
                     scanned++;
 
                     long now = sw.ElapsedMilliseconds;
@@ -244,6 +287,10 @@ public sealed class FileSystemScanner : IFileSystemScanner
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                throw; // Cancellation must propagate to the awaiting caller.
+            }
             catch (Exception ex)
             {
                 _logger?.LogError("Error during FindLargestFiles scan.", ex);
@@ -275,6 +322,7 @@ public sealed class FileSystemScanner : IFileSystemScanner
             // Stage 1: Group by file size (> 100KB to filter out empty/trivial files)
             var sizeBuckets = new Dictionary<long, List<FileInfo>>();
             long scanned = 0;
+            long lastProgressEmitMs = 0;
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
             var progressInfo = new ScanProgressInfo
@@ -288,6 +336,14 @@ public sealed class FileSystemScanner : IFileSystemScanner
                 foreach (var file in rootDir.EnumerateFiles("*", enumOptions))
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
+                    // Recursive enumeration never visits directory nodes, so files living
+                    // under excluded directories are caught via ancestor evaluation.
+                    if (IsExcluded(file.FullName, checkAncestors: true))
+                    {
+                        continue;
+                    }
+
                     scanned++;
 
                     if (file.Length < 100 * 1024) continue; // Skip files smaller than 100KB
@@ -298,6 +354,15 @@ public sealed class FileSystemScanner : IFileSystemScanner
                         sizeBuckets[file.Length] = list;
                     }
                     list.Add(file);
+
+                    long now = sw.ElapsedMilliseconds;
+                    if (now - lastProgressEmitMs > 150)
+                    {
+                        lastProgressEmitMs = now;
+                        progressInfo.FilesScanned = scanned;
+                        progressInfo.CurrentPath = file.FullName;
+                        progress?.Report(progressInfo);
+                    }
                 }
             }
             catch (Exception ex)

@@ -96,11 +96,27 @@ public sealed class DriveMonitorService : IDriveMonitor
                 FreeBytes = status.FreeBytes,
                 TimestampUtc = DateTime.UtcNow
             });
+
+            // Enforce retention after each recorded snapshot so the archive
+            // cannot outgrow Settings.RetentionDays while the app runs.
+            await PruneExpiredRecordsAsync();
         }
     }
 
     public void Dispose()
     {
         StopMonitoring();
+    }
+
+    private async Task PruneExpiredRecordsAsync()
+    {
+        try
+        {
+            await _snapshotRepo.PruneOldSnapshotsAsync(_settingsService.Settings.RetentionDays);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError("Error pruning expired snapshots.", ex);
+        }
     }
 }

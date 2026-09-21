@@ -4,35 +4,44 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
-            <!-- Nordic Theme Colors -->
-            <SolidColorBrush x:Key="BgCanvas" Color="#0D0E12"/>
-            <SolidColorBrush x:Key="BgSidebar" Color="#13151C"/>
-            <SolidColorBrush x:Key="BgCard" Color="#1A1D27"/>
-            <SolidColorBrush x:Key="BgCardSecondary" Color="#151720"/>
-            <SolidColorBrush x:Key="BgInput" Color="#111319"/>
-            
-            <SolidColorBrush x:Key="BorderSubtle" Color="#262A38"/>
-            <SolidColorBrush x:Key="BorderLight" Color="#353B4E"/>
-            
-            <SolidColorBrush x:Key="TextPrimary" Color="#F8F9FA"/>
-            <SolidColorBrush x:Key="TextSecondary" Color="#94A3B8"/>
-            <SolidColorBrush x:Key="TextMuted" Color="#64748B"/>
-            
-            <SolidColorBrush x:Key="AccentOrange" Color="#FF5722"/>
-            <SolidColorBrush x:Key="AccentGreen" Color="#10B981"/>
-            <SolidColorBrush x:Key="AccentCyan" Color="#06B6D4"/>
-            <SolidColorBrush x:Key="AccentRed" Color="#EF4444"/>
+            <!-- "Pressure gauge" tokens (dark, matches CWatch.UI dark theme) -->
+            <SolidColorBrush x:Key="BgCanvas" Color="#0C0E12"/>
+            <SolidColorBrush x:Key="BgSidebar" Color="#0A0C10"/>
+            <SolidColorBrush x:Key="BgCard" Color="#151922"/>
+            <SolidColorBrush x:Key="BgCardSecondary" Color="#1A1F2A"/>
+            <SolidColorBrush x:Key="BgCardNested" Color="#11141C"/>
+            <SolidColorBrush x:Key="BgInput" Color="#0E1117"/>
+
+            <SolidColorBrush x:Key="BorderSubtle" Color="#252B38"/>
+            <SolidColorBrush x:Key="BorderLight" Color="#333B4C"/>
+            <SolidColorBrush x:Key="BorderHover" Color="#4A566E"/>
+
+            <SolidColorBrush x:Key="TextPrimary" Color="#F2F4F7"/>
+            <SolidColorBrush x:Key="TextSecondary" Color="#9AA6B5"/>
+            <SolidColorBrush x:Key="TextMuted" Color="#677182"/>
+
+            <SolidColorBrush x:Key="AccentOrange" Color="#F2632B"/>
+            <SolidColorBrush x:Key="AccentGreen" Color="#3DB583"/>
+            <SolidColorBrush x:Key="AccentCyan" Color="#4CC3E0"/>
+            <SolidColorBrush x:Key="AccentRed" Color="#E0524A"/>
+
+            <FontFamily x:Key="FontDisplay">Segoe UI Variable Display, Segoe UI, sans-serif</FontFamily>
+            <FontFamily x:Key="FontText">Segoe UI Variable Text, Aptos, Segoe UI, sans-serif</FontFamily>
+            <FontFamily x:Key="FontIcon">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
             <Style TargetType="TextBlock">
                 <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-                <Setter Property="FontFamily" Value="Segoe UI Variable Text, Aptos, Segoe UI, sans-serif"/>
+                <Setter Property="FontFamily" Value="{StaticResource FontText}"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Typography.NumeralAlignment" Value="Tabular"/>
             </Style>
 
-            <!-- Tactile Buttons -->
+            <!-- Primary action: the one accent-filled control per step -->
             <Style x:Key="PrimaryButton" TargetType="Button">
                 <Setter Property="Background" Value="{StaticResource AccentOrange}"/>
                 <Setter Property="Foreground" Value="White"/>
-                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontFamily" Value="{StaticResource FontText}"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="Padding" Value="18,8"/>
                 <Setter Property="BorderThickness" Value="0"/>
@@ -45,13 +54,18 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="#F4511E"/>
+                                    <Setter TargetName="border" Property="Opacity" Value="0.88"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="#D84315"/>
+                                    <Setter TargetName="border" Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter TargetName="border" Property="RenderTransformOrigin" Value="0.5,0.5"/>
                                 </Trigger>
                                 <Trigger Property="IsEnabled" Value="False">
-                                    <Setter TargetName="border" Property="Opacity" Value="0.4"/>
+                                    <Setter TargetName="border" Property="Opacity" Value="0.35"/>
                                     <Setter Property="Cursor" Value="Arrow"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
@@ -61,11 +75,11 @@
             </Style>
 
             <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-                <Setter Property="Background" Value="{StaticResource BgCardSecondary}"/>
+                <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
                 <Setter Property="BorderBrush" Value="{StaticResource BorderLight}"/>
                 <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="FontWeight" Value="Regular"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
@@ -74,11 +88,21 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="#222634"/>
-                                    <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentOrange}"/>
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource BgCardSecondary}"/>
+                                    <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource BorderHover}"/>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="#101218"/>
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource BgCardNested}"/>
+                                    <Setter TargetName="border" Property="RenderTransform">
+                                        <Setter.Value>
+                                            <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter TargetName="border" Property="RenderTransformOrigin" Value="0.5,0.5"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="border" Property="Opacity" Value="0.35"/>
+                                    <Setter Property="Cursor" Value="Arrow"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -86,28 +110,28 @@
                 </Setter>
             </Style>
 
-            <!-- Checkbox -->
             <Style TargetType="CheckBox">
                 <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+                <Setter Property="FontFamily" Value="{StaticResource FontText}"/>
                 <Setter Property="FontSize" Value="12"/>
                 <Setter Property="Cursor" Value="Hand"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="CheckBox">
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <Border x:Name="box" Width="16" Height="16" CornerRadius="3" Background="{StaticResource BgInput}" BorderBrush="{StaticResource BorderLight}" BorderThickness="1.5" Margin="0,0,8,0">
-                                    <Path x:Name="check" Data="M 3 7 L 6 10 L 13 3" Stroke="White" StrokeThickness="2" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                <Border x:Name="box" Width="15" Height="15" CornerRadius="2" Background="{StaticResource BgInput}" BorderBrush="{StaticResource BorderLight}" BorderThickness="1.5" Margin="0,0,8,0">
+                                    <Path x:Name="check" Data="M 2.5 6 L 5.5 9 L 11.5 2.5" Stroke="{StaticResource AccentOrange}" StrokeThickness="2" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center"/>
                                 </Border>
                                 <ContentPresenter VerticalAlignment="Center"/>
                             </StackPanel>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsChecked" Value="True">
-                                    <Setter TargetName="box" Property="Background" Value="{StaticResource AccentOrange}"/>
                                     <Setter TargetName="box" Property="BorderBrush" Value="{StaticResource AccentOrange}"/>
+                                    <Setter TargetName="box" Property="Background" Value="{StaticResource BgCardSecondary}"/>
                                     <Setter TargetName="check" Property="Visibility" Value="Visible"/>
                                 </Trigger>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="box" Property="BorderBrush" Value="{StaticResource AccentOrange}"/>
+                                    <Setter TargetName="box" Property="BorderBrush" Value="{StaticResource BorderHover}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
@@ -115,15 +139,15 @@
                 </Setter>
             </Style>
 
-            <!-- Text Input -->
             <Style TargetType="TextBox">
                 <Setter Property="Background" Value="{StaticResource BgInput}"/>
                 <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-                <Setter Property="BorderBrush" Value="{StaticResource BorderLight}"/>
-                <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="Padding" Value="10,7"/>
-                <Setter Property="FontSize" Value="12"/>
                 <Setter Property="CaretBrush" Value="{StaticResource AccentOrange}"/>
+                <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="FontFamily" Value="{StaticResource FontText}"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="Padding" Value="10,7"/>
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="TextBox">
@@ -132,7 +156,7 @@
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsFocused" Value="True">
-                                    <Setter Property="BorderBrush" Value="{StaticResource AccentOrange}"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource BorderHover}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>

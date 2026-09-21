@@ -71,6 +71,25 @@
                 </StackPanel>
             </Border>
 
+            <!-- Group 0.5: Target Drive -->
+            <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Target drive" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,14"/>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="160"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Target Drive" FontWeight="SemiBold" FontSize="12"/>
+                            <TextBlock Text="Drive that scanning, snapshots, monitoring, and trends observe (Default: C:)" Foreground="{DynamicResource TextMuted}" FontSize="11" Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding AvailableDrives}" SelectedItem="{Binding SelectedDrive, Mode=TwoWay}" VerticalAlignment="Center" Background="{DynamicResource BgInput}" Foreground="{DynamicResource TextPrimary}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
             <!-- Group 1: Background Monitoring -->
             <Border Style="{DynamicResource CardBorder}" Margin="0,0,0,16">
                 <StackPanel>
@@ -143,7 +162,7 @@
             <!-- Group 3: Snapshot Retention -->
             <Border Style="{DynamicResource CardBorder}">
                 <StackPanel>
-                    <TextBlock Text="SQLITE ARCHIVE RETENTION" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,14"/>
+                    <TextBlock Text="How long to keep snapshots" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource TextMuted}" Margin="0,0,0,14"/>
 
                     <Grid>
                         <Grid.ColumnDefinitions>
