@@ -14,13 +14,16 @@ Small, well-scoped, and a good way to learn the codebase. The test suite
 - **Show scan progress percent** — `ScanProgressInfo.EstimatedPercent` exists
   but nothing binds to it. Wire it to the top-bar progress display.
   Files: `Views/` + `MainViewModel`.
-- **Sort the cleanup candidate list by clicking column headers** — the
-  collection is already filterable; add sort state.
+- **Add a sort control to the cleanup candidate list** — the list is an
+  `ItemsControl` filtered by `SafetyFilter`; add a sort picker (size, safety)
+  following the same pattern as the existing filter buttons.
   Files: `Views/CleanupView.xaml` + `CleanupViewModel`.
-- **Add a "copy path" item to Explorer context menus** — one command, one
-  menu item. Files: `ExplorerViewModel`, `Views/ExplorerView.xaml`.
-- **Localize the number formatter** — `ByteSizeFormatter` assumes en-US;
-  make unit strings culture-aware. Files: `CWatch.Core`.
+- **Add an "Open log folder" button in Settings** — bug reports ask for logs
+  from `%LOCALAPPDATA%\CWatch\Logs`; give users a button that opens that
+  folder. Files: `Views/SettingsView.xaml` + `ReportsAndSettingsViewModels`.
+- **Localize the number formatter** — `ByteSizeFormatter` hardcodes English
+  unit suffixes ("KB", "MB"); make units culture-aware.
+  Files: `CWatch.Core/Models/ByteSizeFormatter.cs`.
 
 ## Feature candidates
 
