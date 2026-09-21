@@ -58,6 +58,20 @@ public sealed class DashboardViewModel : ViewModelBase
         set => SetProperty(ref _isLoading, value);
     }
 
+    private string _startupNotice = string.Empty;
+
+    /// <summary>One-time startup problem banner (e.g. corrupt settings quarantined).</summary>
+    public string StartupNotice
+    {
+        get => _startupNotice;
+        set => SetProperty(ref _startupNotice, value);
+    }
+
+    /// <summary>Sets a dismissible startup notice; replaces any previous one.</summary>
+    public void SetStartupNotice(string message) => StartupNotice = message;
+
+    public ICommand DismissStartupNoticeCommand { get; }
+
     public ObservableCollection<CategoryBreakdown> Categories { get; } = [];
     public ObservableCollection<StorageSnapshot> RecentSnapshots { get; } = [];
 
@@ -83,6 +97,7 @@ public sealed class DashboardViewModel : ViewModelBase
         RecommendedCleanupCommand = new RelayCommand(() => _navigateTo("Cleanup"));
         RefreshCommand = new AsyncRelayCommand(LoadDashboardDataAsync);
         OpenCategoryCommand = new RelayCommand(_ => _navigateTo("Explorer"));
+        DismissStartupNoticeCommand = new RelayCommand(() => StartupNotice = string.Empty);
     }
 
     public async Task LoadDashboardDataAsync()
@@ -122,12 +137,16 @@ public sealed class DashboardViewModel : ViewModelBase
                 try
                 {
                     var cached = System.Text.Json.JsonSerializer.Deserialize<List<CategoryBreakdown>>(latestSnap.CategoriesJson);
-                    if (cached != null && cached.Count > 0 && Categories.Count == 0)
+                    // Refresh whenever a snapshot carries categories, including after scans.
+                    if (cached != null && cached.Count > 0)
                     {
                         UpdateCategories(cached);
                     }
                 }
-                catch { }
+                catch (System.Text.Json.JsonException)
+                {
+                    // Corrupt cache blob: keep whatever is on screen rather than blanking it.
+                }
             }
 
             if (snapshots.Count >= 2)

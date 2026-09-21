@@ -33,7 +33,9 @@ public sealed class HistoryViewModel : ViewModelBase
         {
             if (SetProperty(ref _selectedTimeRange, value))
             {
-                _ = LoadHistoryAsync();
+                // Route through the command so the in-flight guard prevents
+                // overlapping loads and failures surface through its handler.
+                RefreshCommand.Execute(null);
             }
         }
     }

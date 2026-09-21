@@ -57,7 +57,7 @@ public sealed class MainViewModel : ViewModelBase
         set
         {
             _settingsService.Settings.AppTheme = value;
-            _ = _settingsService.SaveSettingsAsync();
+            SaveSettingsSafely();
             OnPropertyChanged();
             OnPropertyChanged(nameof(ThemeModeLabel));
             OnPropertyChanged(nameof(ThemeModeTooltip));
@@ -197,15 +197,17 @@ public sealed class MainViewModel : ViewModelBase
         {
             ThemeManager.Instance.SetTheme(mode);
         }
-    }
-
-    public void NavigateTo(string page)
+    }    public void NavigateTo(string page)
     {
         CurrentPage = page;
         OnPropertyChanged(nameof(CurrentView));
-        if (page == "History") _ = HistoryVM.LoadHistoryAsync();
-        if (page == "Recurring") _ = RecurringVM.LoadRecurringAlertsAsync();
-        if (page == "Cleanup") _ = CleanupVM.ScanForRecommendationsAsync();
+
+        // Commands, not bare tasks: failures surface in-page instead of becoming
+        // unobserved task exceptions, and the guard inside AsyncRelayCommand
+        // prevents overlapping loads from rapid navigation.
+        if (page == "History") HistoryVM.RefreshCommand.Execute(null);
+        if (page == "Recurring") RecurringVM.RefreshCommand.Execute(null);
+        if (page == "Cleanup") CleanupVM.ScanCandidatesCommand.Execute(null);
     }
 
     public async Task InitializeAsync()
@@ -214,6 +216,14 @@ public sealed class MainViewModel : ViewModelBase
         ApplyThemeFromSetting(_settingsService.Settings.AppTheme);
 
         await _snapshotRepo.InitializeAsync();
+
+        // Surface a settings-file failure instead of silently running on defaults.
+        if (_settingsService is Infrastructure.Config.SettingsService concrete
+            && concrete.LastLoadHadProblems)
+        {
+            DashboardVM.SetStartupNotice(
+                "Settings file was unreadable, so defaults were restored. Check the log for details.");
+        }
 
         // Enforce snapshot retention at startup: deletes records older than
         // Settings.RetentionDays and normalizes DB files that grew unbounded.
@@ -305,6 +315,22 @@ public sealed class MainViewModel : ViewModelBase
     public void CancelScan()
     {
         _scanCts?.Cancel();
+    }
+
+    /// <summary>
+    /// Fire-and-forget persistence for non-critical writes (theme toggle). The
+    /// failure is logged and nothing escapes as an unobserved task exception.
+    /// </summary>
+    private async void SaveSettingsSafely()
+    {
+        try
+        {
+            await _settingsService.SaveSettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Background settings save failed.", ex);
+        }
     }
 
     /// <summary>

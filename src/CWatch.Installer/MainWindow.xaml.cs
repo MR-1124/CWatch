@@ -83,7 +83,13 @@ public partial class MainWindow : Window
         else if (_currentStep == 2)
         {
             SetStep(3);
-            await RunInstallationAsync();
+            bool success = await RunInstallationAsync();
+            if (!success)
+            {
+                // Stay on the installing step so the user can cancel or retry
+                // instead of being told "Setup finished" after a failed install.
+                return;
+            }
         }
     }
 
@@ -143,10 +149,16 @@ public partial class MainWindow : Window
         };
     }
 
-    private async Task RunInstallationAsync()
+    /// <summary>
+    /// Runs the installation. Returns false when it failed so the wizard does
+    /// not present the finished page after an error.
+    /// </summary>
+    private async Task<bool> RunInstallationAsync()
     {
         InstallProgressBar.IsIndeterminate = true;
         TxtInstallStatus.Text = "Preparing installation directory...";
+
+        bool installationSucceeded = false;
 
         await Task.Run(() =>
         {
@@ -273,19 +285,25 @@ public partial class MainWindow : Window
                     using var runKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", writable: true);
                     runKey?.SetValue("CWatch", $"\"{targetExe}\" --minimized");
                 }
+
+                installationSucceeded = true;
             }
             catch (Exception ex)
             {
                 Dispatcher.Invoke(() =>
                 {
-                    MessageBox.Show($"Installation encountered an error:\n{ex.Message}", "Setup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Installation failed and was not completed. You can retry or cancel.\n\n{ex.Message}", "Setup Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 });
             }
         });
 
         InstallProgressBar.IsIndeterminate = false;
-        InstallProgressBar.Value = 100;
-        SetStep(4);
+        if (installationSucceeded)
+        {
+            InstallProgressBar.Value = 100;
+            SetStep(4);
+        }
+        return installationSucceeded;
     }
 
     private static void CreateShortcut(string shortcutPath, string targetPath, string workingDir, string description)
@@ -319,7 +337,7 @@ public partial class MainWindow : Window
             if (key != null)
             {
                 key.SetValue("DisplayName", "C:Watch Storage Intelligence");
-                key.SetValue("DisplayVersion", "1.1.1");
+                key.SetValue("DisplayVersion", "1.1.2");
                 key.SetValue("Publisher", "MR-1124");
                 key.SetValue("DisplayIcon", Path.Combine(installDir, "Assets", "app.ico"));
                 key.SetValue("UninstallString", $"\"{Path.Combine(installDir, "uninstall.cmd")}\"");

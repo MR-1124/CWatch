@@ -1,6 +1,6 @@
 # C:Watch Release Packaging & Distribution Builder
 param(
-    [string]$Version = "1.1.1"
+    [string]$Version = "1.1.2"
 )
 
 $ErrorActionPreference = "Stop"

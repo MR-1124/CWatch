@@ -149,8 +149,10 @@ public sealed class CleanupEngine : ICleanupEngine
                     combinedResult.ErrorMessages.AddRange(result.ErrorMessages);
                     combinedResult.LockedFiles.AddRange(result.LockedFiles);
 
-                    // Record Clean History in database
-                    if (_snapshotRepo != null)
+                    // Record history only for what the provider confirmed cleaned.
+                    // Recording every candidate would let the recurrence detector
+                    // treat failed or blocked items as recurring bloat.
+                    if (_snapshotRepo != null && result.ItemsCleanedCount > 0)
                     {
                         foreach (var cand in candidatesForProvider)
                         {

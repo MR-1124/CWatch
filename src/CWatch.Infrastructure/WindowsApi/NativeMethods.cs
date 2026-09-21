@@ -62,7 +62,8 @@ public static class NativeMethods
 
     /// <summary>
     /// Safely moves a file or directory to the Windows Recycle Bin so the user can restore it if necessary.
-    /// Falls back to permanent deletion if Recycle Bin is unavailable.
+    /// Returns false when the file cannot be recycled — it never escalates to a permanent delete,
+    /// so callers can surface an honest failure instead of destroying data the user expects to recover.
     /// </summary>
     public static bool SendToRecycleBin(string path)
     {
@@ -86,28 +87,12 @@ public static class NativeMethods
             };
 
             int result = SHFileOperation(ref op);
-            if (result == 0 && !op.fAnyOperationsAborted)
-            {
-                return true;
-            }
-
-            // Fallback
-            if (File.Exists(path)) File.Delete(path);
-            else if (Directory.Exists(path)) Directory.Delete(path, true);
-            return true;
+            return result == 0 && !op.fAnyOperationsAborted &&
+                   !File.Exists(path) && !Directory.Exists(path);
         }
         catch
         {
-            try
-            {
-                if (File.Exists(path)) File.Delete(path);
-                else if (Directory.Exists(path)) Directory.Delete(path, true);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return false;
         }
     }
 

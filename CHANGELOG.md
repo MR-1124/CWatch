@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+## [1.1.2] - 2026-09-21
+
+### Fixed
+- **Recycle Bin deletion could silently become a permanent delete.** When the shell operation failed, the fallback hard-deleted the file and still reported success, so data the user expected to recover was gone. Deletion is now verified and failures are reported honestly; no code path permanent-deletes.
+- **Installer showed "Setup finished" after a failed install.** Errors were swallowed and the wizard advanced to the finished page with full progress. Failures now stay on the installing step with a retry message.
+- **Drive monitoring died on the first transient error.** A single failed check (drive briefly offline) stopped monitoring permanently. Checks are now isolated and retried each interval, with a re-entrancy guard against overlapping ticks.
+- **Failed cleanups were recorded as successful history**, which poisoned the recurring-bloat detector with phantom entries. History is only written for confirmed deletions.
+- **Settings saves failed silently.** Save errors now surface in the Settings page and keep the unsaved-changes state.
+- **Stale category chart after scans.** The dashboard cache guard prevented post-scan recoloring; corrupt cached JSON was swallowed by a bare catch.
+- **Cleanup confirmation modal stayed open during execution**, and post-cleanup recommendations could come from the 5-minute cache including just-deleted targets.
+- **Explorer deletions had no subtree guard and gave no failure feedback.** Largest-files and duplicate deletions are now bounded to the scanned tree and report items that could not be recycled.
+
+### Changed
+- Four unobserved-task exception paths (page navigation loads, theme save, time-range changes, command re-entrancy) now route through guarded commands or logged safe-save helpers.
+- Settings file: atomic writes (a crash can no longer truncate it), corrupt files quarantined to `.corrupt` with a dashboard notice, and impossible persisted values (zero intervals, negative thresholds, unknown themes, malformed drive letters) sanitized on load and save.
+
+### Added
+- 5 regression tests covering honest cleanup history, exclusion enforcement, settings quarantine round-trip, value sanitization, and atomic saves. Suite is now 99 tests.
+
 ## [1.1.1] - 2026-09-21
 
 ### Added

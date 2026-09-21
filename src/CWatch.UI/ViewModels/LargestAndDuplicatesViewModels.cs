@@ -16,6 +16,7 @@ public sealed class LargestFilesViewModel : ViewModelBase
     private string _selectedMinSize = "All"; // All, >10GB, >1GB, >500MB, >100MB
     private string _sortBy = "SizeDesc"; // SizeDesc, DateDesc, NameAsc
     private List<StorageItem> _allLargestFiles = [];
+    private string? _scannedRootPath;
     private StorageItem? _selectedFile;
     private string _statusMessage = "Index loaded.";
 
@@ -128,16 +129,27 @@ public sealed class LargestFilesViewModel : ViewModelBase
         DeleteSelectedFileCommand = new RelayCommand(param =>
         {
             var item = param as StorageItem ?? SelectedFile;
-            if (item != null && File.Exists(item.FullPath))
+            if (item == null) return;
+            if (!File.Exists(item.FullPath) && !Directory.Exists(item.FullPath)) return;
+
+            // Never recycle anything outside the scanned subtree (safety net).
+            if (_scannedRootPath == null || !item.FullPath.StartsWith(_scannedRootPath, StringComparison.OrdinalIgnoreCase))
             {
-                bool deleted = NativeMethods.SendToRecycleBin(item.FullPath);
-                if (deleted)
-                {
-                    _allLargestFiles.Remove(item);
-                    DisplayedFiles.Remove(item);
-                    StatusMessage = $"Moved '{item.Name}' ({item.DisplaySize}) to Recycle Bin.";
-                    SelectedFile = DisplayedFiles.FirstOrDefault();
-                }
+                StatusMessage = "Deletion blocked: the item is outside the scanned folder tree.";
+                return;
+            }
+
+            bool deleted = NativeMethods.SendToRecycleBin(item.FullPath);
+            if (deleted)
+            {
+                _allLargestFiles.Remove(item);
+                DisplayedFiles.Remove(item);
+                StatusMessage = $"Moved '{item.Name}' ({item.DisplaySize}) to Recycle Bin.";
+                SelectedFile = DisplayedFiles.FirstOrDefault();
+            }
+            else
+            {
+                StatusMessage = $"Could not move '{item.Name}' to the Recycle Bin. It may be locked or protected; nothing was deleted.";
             }
         });
 
@@ -162,7 +174,30 @@ public sealed class LargestFilesViewModel : ViewModelBase
     public void SetLargestFiles(List<StorageItem> files)
     {
         _allLargestFiles = files;
+        _scannedRootPath = ComputeCommonRoot(files);
         ApplyFilter();
+    }
+
+    /// <summary>
+    /// Longest common ancestor directory of the results — approximates the scan
+    /// root so deletions stay bounded to the tree the user actually scanned.
+    /// </summary>
+    private static string? ComputeCommonRoot(List<StorageItem> files)
+    {
+        if (files.Count == 0) return null;
+
+        string root = Path.GetDirectoryName(Path.GetFullPath(files[0].FullPath)) ?? files[0].FullPath;
+        foreach (var f in files.Skip(1))
+        {
+            string dir = Path.GetDirectoryName(Path.GetFullPath(f.FullPath)) ?? string.Empty;
+            while (root.Length > 0)
+            {
+                if (dir.StartsWith(root, StringComparison.OrdinalIgnoreCase)) break;
+                root = Path.GetDirectoryName(root) ?? string.Empty;
+            }
+            if (root.Length == 0) return null;
+        }
+        return root.Length == 0 ? null : root;
     }
 
     private void ApplyFilter()
@@ -272,6 +307,7 @@ public sealed class DuplicateFileEntry : ViewModelBase
 public sealed class DuplicatesViewModel : ViewModelBase
 {
     private readonly IFileSystemScanner _scanner;
+    private string? _duplicatesScanRoot;
     private bool _isScanning;
     private string _statusMessage = "Click 'Scan Duplicates' to discover identical files across user folders.";
     private string _currentPhase = string.Empty;
@@ -413,6 +449,7 @@ public sealed class DuplicatesViewModel : ViewModelBase
         StatusMessage = "Analyzing file signatures and computing SHA-256 byte hashes...";
         DuplicateGroups.Clear();
         TotalWastedBytes = 0;
+        _duplicatesScanRoot = null;
 
         try
         {
@@ -432,6 +469,7 @@ public sealed class DuplicatesViewModel : ViewModelBase
             try
             {
                 results = await _scanner.FindDuplicateFilesAsync(scanPath, cancellationToken: _scanCts.Token);
+                _duplicatesScanRoot = Path.GetFullPath(scanPath).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
             }
             catch (OperationCanceledException)
             {
@@ -488,6 +526,7 @@ public sealed class DuplicatesViewModel : ViewModelBase
     private void DeleteSelected()
     {
         int deletedCount = 0;
+        int failedCount = 0;
         long freedBytes = 0;
 
         foreach (var grp in DuplicateGroups.ToList())
@@ -496,6 +535,14 @@ public sealed class DuplicatesViewModel : ViewModelBase
             {
                 try
                 {
+                    // Never recycle anything outside the scanned subtree (safety net).
+                    if (_duplicatesScanRoot == null ||
+                        !file.FullPath.StartsWith(_duplicatesScanRoot, StringComparison.OrdinalIgnoreCase))
+                    {
+                        failedCount++;
+                        continue;
+                    }
+
                     if (File.Exists(file.FullPath))
                     {
                         long size = file.StorageItem.SizeBytes;
@@ -505,6 +552,10 @@ public sealed class DuplicatesViewModel : ViewModelBase
                             grp.Files.Remove(file);
                             freedBytes += size;
                             deletedCount++;
+                        }
+                        else
+                        {
+                            failedCount++;
                         }
                     }
                 }
@@ -518,6 +569,8 @@ public sealed class DuplicatesViewModel : ViewModelBase
         }
 
         TotalWastedBytes = Math.Max(0, TotalWastedBytes - freedBytes);
-        StatusMessage = $"Successfully moved {deletedCount} duplicate file(s) to Recycle Bin ({ByteSizeFormatter.Format(freedBytes)} recovered).";
+        StatusMessage = failedCount > 0
+            ? $"Moved {deletedCount} file(s) to the Recycle Bin ({ByteSizeFormatter.Format(freedBytes)}); {failedCount} could not be recycled and were left untouched."
+            : $"Moved {deletedCount} duplicate file(s) to Recycle Bin ({ByteSizeFormatter.Format(freedBytes)} recovered).";
     }
 }

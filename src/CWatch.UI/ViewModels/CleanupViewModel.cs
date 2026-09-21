@@ -64,11 +64,7 @@ public sealed class CleanupViewModel : ViewModelBase
         set => SetProperty(ref _totalSelectedBytes, value);
     }
 
-    public string FormattedTotalSelected
-    {
-        get => ByteSizeFormatter.Format(TotalSelectedBytes);
-        set { }
-    }
+    public string FormattedTotalSelected => ByteSizeFormatter.Format(TotalSelectedBytes);
 
     public string CurrentCleaningProgress
     {
@@ -243,9 +239,13 @@ public sealed class CleanupViewModel : ViewModelBase
             var result = await _cleanupEngine.ExecuteCleanupAsync(selected, progress, _cleanupCts.Token);
             LastResult = result;
 
-            StatusMessage = $"Successfully freed {result.FormattedBytesCleaned} disk space across {result.ItemsCleanedCount} location(s)!";
+            StatusMessage = result.FailedItemsCount > 0
+                ? $"Freed {result.FormattedBytesCleaned}; {result.FailedItemsCount} location(s) could not be cleaned. See the report for details."
+                : $"Successfully freed {result.FormattedBytesCleaned} disk space across {result.ItemsCleanedCount} location(s)!";
 
-            // Refresh candidate list after cleaning
+            // Force a fresh scan: post-cleanup recommendations must reflect what
+            // actually remains on disk, not the cached pre-cleanup results.
+            _lastScanUtc = DateTime.MinValue;
             await ScanForRecommendationsAsync();
         }
         catch (OperationCanceledException)

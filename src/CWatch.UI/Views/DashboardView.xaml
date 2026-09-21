@@ -51,6 +51,25 @@
                 </Grid>
             </Border>
 
+            <!-- Startup notice (e.g. settings file was quarantined) -->
+            <Border Background="{DynamicResource BgCardNested}" BorderBrush="{DynamicResource AccentAmber}"
+                    BorderThickness="1" CornerRadius="4" Margin="0,0,0,16"
+                    Visibility="{Binding StartupNotice, Converter={StaticResource StringToVisibility}}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Width="4" Background="{DynamicResource AccentAmber}" CornerRadius="2" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="{Binding StartupNotice}" FontSize="{StaticResource FontSizeCaption}"
+                               Foreground="{DynamicResource TextPrimary}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                    <Button Grid.Column="2" Content="Dismiss" Command="{Binding DismissStartupNoticeCommand}"
+                            Style="{DynamicResource GhostButton}" Padding="10,2" FontSize="{StaticResource FontSizeCaption}"
+                            VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+
             <!-- ============ The instrument: capacity at a glance ============ -->
             <Border Style="{DynamicResource HeroCardBorder}" Margin="0,0,0,16">
                 <Grid>

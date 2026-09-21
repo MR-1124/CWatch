@@ -80,9 +80,17 @@ public sealed class AsyncRelayCommand : ICommand
 
     public bool CanExecute(object? parameter) => !_isExecuting && (_canExecute == null || _canExecute(parameter));
 
+    /// <summary>
+    /// async void is required by ICommand, so this method must never throw:
+    /// the in-flight guard is set/cleared synchronously and every failure path
+    /// is observed, keeping exceptions off the unobserved-task finalizer.
+    /// </summary>
     public async void Execute(object? parameter)
     {
-        if (!CanExecute(parameter)) return;
+        // Re-check outside CanExecute: async re-entrancy can slip past a stale
+        // requery between CanExecute and here, double-starting long operations.
+        if (_isExecuting) return;
+        if (_canExecute != null && !_canExecute(parameter)) return;
 
         _isExecuting = true;
         CommandManager.InvalidateRequerySuggested();
@@ -90,6 +98,19 @@ public sealed class AsyncRelayCommand : ICommand
         try
         {
             await _execute(parameter);
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is a normal outcome, not an error.
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"AsyncRelayCommand unhandled: {ex}");
+#if DEBUG
+            System.Windows.MessageBox.Show(
+                $"An unexpected error occurred:\n{ex.Message}", "C:Watch Error",
+                System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+#endif
         }
         finally
         {

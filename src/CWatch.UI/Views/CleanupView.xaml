@@ -185,7 +185,7 @@
                     <!-- Modal Actions -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <Button Content="CANCEL" Command="{Binding CancelConfirmationCommand}" Style="{DynamicResource SecondaryButton}" Margin="0,0,8,0" Padding="14,6" FontSize="11"/>
-                        <Button Content="⚡ PROCEED WITH CLEANUP" Command="{Binding ConfirmCleanCommand}" Style="{DynamicResource SuccessButton}" Padding="16,6" FontSize="11"/>
+                        <Button Content="Clean up now" Command="{Binding ConfirmCleanCommand}" Style="{DynamicResource SuccessButton}" Padding="16,6" FontSize="12"/>
                     </StackPanel>
                 </StackPanel>
             </Border>

@@ -68,7 +68,41 @@ public sealed class DriveMonitorService : IDriveMonitor
         }
     }
 
+    private int _checking; // 0 = idle, 1 = running
+
     private async Task PerformCheckAsync()
+    {
+        // Re-entrancy guard: a slow check must not overlap the next timer tick.
+        if (System.Threading.Interlocked.CompareExchange(ref _checking, 1, 0) != 0) return;
+        try
+        {
+            await PerformCheckCoreAsync();
+        }
+        finally
+        {
+            System.Threading.Interlocked.Exchange(ref _checking, 0);
+        }
+    }
+
+    private async Task PerformCheckCoreAsync()
+    {
+        // A single failed check (drive pulled offline, query error) must not
+        // kill monitoring — log and let the next interval retry.
+        try
+        {
+            await CheckDriveAndRecordAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError("Drive status check failed; will retry on next interval.", ex);
+        }
+    }
+
+    private async Task CheckDriveAndRecordAsync()
     {
         string driveLetter = _settingsService.Settings.TargetDriveLetter;
         var status = _storageAnalyzer.GetDriveStatus(driveLetter);
